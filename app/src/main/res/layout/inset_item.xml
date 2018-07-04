@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:layout_height="20dp"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"
+        android:text="-插画-"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_height="20dp"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"
+        android:layout_gravity="center_horizontal"
+        android:textColor="#000000"/>
+
+    <ImageView
+        android:id="@+id/iv_inset"
+        android:layout_height="200dp"
+        android:layout_width="match_parent"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/tv_imageauthors"
+        android:layout_height="30dp"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/tv_content"
+        android:layout_height="70dp"
+        android:layout_width="wrap_content"
+        android:textSize="15sp"
+        android:textColor="#000000"/>
+
+    <TextView
+        android:id="@+id/tv_hpauthors"
+        android:layout_height="40dp"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center_horizontal"/>
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_height="20dp"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"/>
+
+</LinearLayout>
