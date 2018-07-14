@@ -5,6 +5,7 @@ package com.yuzeduan.bean;
  */
 
 public class ReadingMusicList {
+    private String id;
     private String mItemId;
     private String mTitle;
     private String mForword;
@@ -12,6 +13,14 @@ public class ReadingMusicList {
     private String mLastUpdateDate;
     private String mUserName;
     private String mDesc;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getmItemId() {
         return mItemId;

@@ -19,18 +19,10 @@ public class ImageHttpUtil {
     /**
      * 从网络上下载图片,并缓存到LruCache中
      * @param image_path 表示下载图片的地址,同时也是LruCache中的键
-     * @param callBack 用于展示图片的回调接口
+     * @param callback 表示展示图片的接口
      */
-    public static void loadImage(final String image_path, final ImageCallback callBack) {
-        final Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                Bitmap bitmap = (Bitmap) msg.obj;
-                callBack.getBitmap(bitmap);
-            }
-        };
-
+    public static void loadImage(final String image_path, final ImageCallback callback) {
+        final Handler mHandler = new Handler();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -41,12 +33,15 @@ public class ImageHttpUtil {
                     connection.setRequestMethod("GET");
                     connection.setConnectTimeout(10000);
                     connection.setReadTimeout(10000);
-                    Bitmap bitmap = BitmapFactory.decodeStream(connection.getInputStream());
+                    final Bitmap bitmap = BitmapFactory.decodeStream(connection.getInputStream());
                     mLruCacheUtil.addBitmapToCache(image_path, bitmap);  // 用LruCache缓存Bitmap对象
                     CacheUtil.saveBitmap(image_path ,bitmap);  // 用SharedPreferences缓存Bitmap
-                    Message message = Message.obtain();
-                    message.obj = bitmap;
-                    handler.sendMessage(message);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.getBitmap(bitmap);
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {

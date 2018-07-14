@@ -1,12 +1,24 @@
 package com.yuzeduan.activity;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +36,8 @@ import com.yuzeduan.db.InsetDao;
 import com.yuzeduan.db.MovieListDao;
 import com.yuzeduan.db.MusicListDao;
 import com.yuzeduan.db.ReadingListDao;
+import com.yuzeduan.service.AutoUpdateService;
+import com.yuzeduan.service.DownloadService;
 import com.yuzeduan.util.HttpCallbackListener;
 import com.yuzeduan.util.HttpUtil;
 import com.yuzeduan.util.ParseJSONUtil;
@@ -56,21 +70,33 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<ReadingMusicList> mReadingList, mMusicList;
     private ArrayList<MovieList> mMovieList;
     private ArrayList<Inset> mInsetList;
+    private DownloadService.DownloadBinder downloadBinder;
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            downloadBinder = (DownloadService.DownloadBinder)service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null){
+        if (actionBar != null) {
             actionBar.hide();
         }
         final ViewPager viewPager = (ViewPager) findViewById(R.id.main_vp);
         // 定义一个viewPager,用于不同类型的界面切换
-        View lvReadingList = getLayoutInflater().inflate(R.layout.listview,null);
-        View lvMusicList = getLayoutInflater().inflate(R.layout.listview,null);
-        View lvMovieList = getLayoutInflater().inflate(R.layout.listview,null);
-        View lvInsetList = getLayoutInflater().inflate(R.layout.listview,null);
+        View lvReadingList = getLayoutInflater().inflate(R.layout.listview, null);
+        View lvMusicList = getLayoutInflater().inflate(R.layout.listview, null);
+        View lvMovieList = getLayoutInflater().inflate(R.layout.listview, null);
+        View lvInsetList = getLayoutInflater().inflate(R.layout.listview, null);
         mLvReading = (ListView) lvReadingList.findViewById(R.id.main_lv_list);
         mLvMusic = (ListView) lvMusicList.findViewById(R.id.main_lv_list);
         mLvMovie = (ListView) lvMovieList.findViewById(R.id.main_lv_list);
@@ -80,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         mViewList.add(lvMovieList);
         mViewList.add(lvInsetList);
         // 为viewPager设置适配器
-        viewPager.setAdapter(new PagerAdapter(){
+        viewPager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {
                 //这个方法是返回总共有几个滑动的页面
@@ -106,6 +132,21 @@ public class MainActivity extends AppCompatActivity {
                 viewPager.removeView(mViewList.get(position));
             }
         });
+        final Intent downloadIntent= new Intent(this, DownloadService.class);
+        startService(downloadIntent);
+        bindService(downloadIntent, connection, BIND_AUTO_CREATE);
+        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(downloadBinder == null){
+                    return;
+                }
+                else{
+                    downloadBinder.startDownload(NEW_READINGLIST_URL);
+                }
+            }
+        });
         setReadingListView();
         setMusicListView();
         setMovieListView();
@@ -114,17 +155,29 @@ public class MainActivity extends AppCompatActivity {
         refreshList(lvMusicList, MUSIC);
         refreshList(lvMovieList, MOVIE);
         refreshList(lvInsetList, INSET);
+        sendNotification();
+        // 开启后台定时刷新数据
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(this, DownloadService.class);
+        unbindService(connection);
+        stopService(intent);
     }
 
     /**
      * 进行阅读列表的展示并对列表设置点击事件监听器
      */
-    public void setReadingListView(){
-        ReadingListDao readingListDao = new ReadingListDao();
-        mReadingList = readingListDao.findReadingList();
+    public void setReadingListView() {
+        ReadingListDao musicListDao = new ReadingListDao();
+        mReadingList = musicListDao.findReadingList();
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(mReadingList != null){
-            ReadingAdapter adapter = new ReadingAdapter(this, R.layout.reading_item, mReadingList);
+        if (mReadingList != null) {
+            ReadingAdapter adapter = new ReadingAdapter(this, mReadingList, R.layout.reading_item);
             mLvReading.setAdapter(adapter);
             // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
             mLvReading.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -137,8 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
-        }
-        else{
+        } else {
             queryFromServer(READINGLIST_URL, READING);
         }
     }
@@ -146,12 +198,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 进行音乐列表的展示并对列表设置点击事件监听器
      */
-    public void setMusicListView(){
+    public void setMusicListView() {
         MusicListDao musicListDao = new MusicListDao();
         mMusicList = musicListDao.findMusicList();
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(mMusicList != null){
-            MusicAdapter adapter = new MusicAdapter(this, R.layout.music_item, mMusicList);
+        if (mMusicList != null) {
+            MusicAdapter adapter = new MusicAdapter(this, mMusicList, R.layout.music_item);
             mLvMusic.setAdapter(adapter);
             // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
             mLvMusic.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -164,8 +216,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
-        }
-        else {
+        } else {
             queryFromServer(MUSICLIST_URL, MUSIC);
         }
     }
@@ -173,12 +224,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 进行影视列表的展示并对列表设置点击事件监听器
      */
-    public void setMovieListView(){
+    public void setMovieListView() {
         MovieListDao movieListDao = new MovieListDao();
         mMovieList = movieListDao.findMovieList();
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(mMovieList != null){
-            MovieAdapter adapter = new MovieAdapter(this, R.layout.movie_item, mMovieList);
+        if (mMovieList != null) {
+            MovieAdapter adapter = new MovieAdapter(this, mMovieList, R.layout.movie_item);
             mLvMovie.setAdapter(adapter);
             // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
             mLvMovie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -191,8 +242,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
             });
-        }
-        else{
+        } else {
             queryFromServer(MOVIELIST_URL, MOVIE);
         }
     }
@@ -200,26 +250,27 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 进行插画列表的展示
      */
-    public void setInsetListView(){
+    public void setInsetListView() {
         InsetDao insetDao = new InsetDao();
         mInsetList = insetDao.findInset();
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(mInsetList != null){
-            InsetAdapter adapter = new InsetAdapter(this, R.layout.inset_item, mInsetList);
+        if (mInsetList != null) {
+            InsetAdapter adapter = new InsetAdapter(this, mInsetList, R.layout.inset_item);
             mLvInset.setAdapter(adapter);
-        }
-        else{
+        } else {
             queryFromServer(INSETID_URL, INSET);
         }
     }
 
     /**
      * 从服务器中获取数据
+     *
      * @param address 表示用于获取数据的api地址
-     * @param flag 表示用于判断阅读,影视,音乐,插画对象的标志
+     * @param flag    表示用于判断阅读,影视,音乐,插画对象的标志
      */
-    public void queryFromServer(String address, final int flag){
-        if(flag == INSET){
+    public void queryFromServer(String address, final int flag) {
+        final Handler handler = new Handler();
+        if (flag == INSET) {
             String idResponse = SyncHttpUtil.getJSON(address);
             ArrayList<InsetId> idList = ParseJSONUtil.parseInsetId(idResponse);
             Iterator<InsetId> it = idList.iterator();
@@ -233,31 +284,26 @@ public class MainActivity extends AppCompatActivity {
                 ParseJSONUtil.parseInset(insetResponse);
             }
             setInsetListView();
-        }
-        else{
+        } else {
             HttpUtil.getJSON(address, new HttpCallbackListener() {
                 @Override
                 public void onFinish(String response) {
-                    if(flag == READING ){
+                    if (flag == READING) {
                         ParseJSONUtil.parseReadingMusicList(response, READING);
-                    }
-                    else if(flag == MUSIC){
+                    } else if (flag == MUSIC) {
                         ParseJSONUtil.parseReadingMusicList(response, MUSIC);
-                    }
-                    else{
+                    } else {
                         ParseJSONUtil.parseMovieList(response);
                     }
                     // 获取数据后重新调用展示数据的方法,此时数据库中已有缓存
-                    runOnUiThread(new Runnable() {
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if(flag == READING){
+                            if (flag == READING) {
                                 setReadingListView();
-                            }
-                            else if(flag == MUSIC){
+                            } else if (flag == MUSIC) {
                                 setMusicListView();
-                            }
-                            else{
+                            } else {
                                 setMovieListView();
                             }
                         }
@@ -269,30 +315,47 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 对列表进行刷新事件的监听,并刷新列表
+     *
      * @param view 表示加载布局所得的View对象
      * @param flag 表示用于判断阅读,影视,音乐,插画对象的标志
      */
-    public void refreshList(View view, final int flag){
-        final SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout)view.findViewById(R.id.swipe_refresh);
+    public void refreshList(View view, final int flag) {
+        final SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 // 调用从服务器获取数据的方法,更新数据,再进行展示
-                if(flag == READING){
+                if (flag == READING) {
                     queryFromServer(NEW_READINGLIST_URL, READING);
-                }
-                else if(flag == MUSIC){
+                } else if (flag == MUSIC) {
                     queryFromServer(NEW_MUSICLIST_URL, MUSIC);
-                }
-                else if(flag == MOVIE){
+                } else if (flag == MOVIE) {
                     queryFromServer(NEW_MOVIELIST_URL, MOVIE);
-                }
-                else{
+                } else {
                     queryFromServer(NEW_INSETID_URL, INSET);
                 }
                 swipeRefresh.setRefreshing(false);
             }
         });
+    }
+
+    public void sendNotification() {
+        ReadingListDao musicListDao = new ReadingListDao();
+        mReadingList = musicListDao.findReadingList();
+        Iterator<ReadingMusicList> it = mReadingList.iterator();
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, 0);
+        ReadingMusicList reading = it.next();
+        NotificationManager manger = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle(reading.getmTitle())
+                .setContentText(reading.getmForword())
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.one)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .build();
+        manger.notify(2, notification);
     }
 }

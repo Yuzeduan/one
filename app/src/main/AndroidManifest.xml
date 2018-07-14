@@ -22,6 +22,14 @@
         <activity android:name=".MusicContentActivity" />
         <activity android:name=".MovieContentActivity" />
 
+        <service
+            android:name="com.yuzeduan.service.AutoUpdateService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name="com.yuzeduan.service.DownloadService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

@@ -46,6 +46,7 @@ public class ParseJSONUtil {
             JSONArray dataArray = jsonObject.getJSONArray("data");
             for(int i = 0; i < dataArray.length(); i++) {
                 JSONObject data = dataArray.getJSONObject(i);
+                String id = data.getString("id");
                 String item_id = data.getString("item_id");
                 String title = data.getString("title");
                 String forward = data.getString("forward");
@@ -55,6 +56,7 @@ public class ParseJSONUtil {
                 String user_name = author.getString("user_name");
                 String desc = author.getString("desc");
                 ReadingMusicList element = new ReadingMusicList();
+                element.setId(id);
                 element.setmItemId(item_id);
                 element.setmTitle(title);
                 element.setmForword(forward);

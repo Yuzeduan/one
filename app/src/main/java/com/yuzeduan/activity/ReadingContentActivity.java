@@ -19,6 +19,7 @@ import com.yuzeduan.util.HttpCallbackListener;
 import com.yuzeduan.util.HttpUtil;
 import com.yuzeduan.util.ParseJSONUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -29,6 +30,7 @@ public class ReadingContentActivity extends AppCompatActivity {
     private ListView mLvReadingComment;  // 展示阅读评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
+    private Handler mHandler = new CommentHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,20 +74,33 @@ public class ReadingContentActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    public static class CommentHandler extends Handler{
+        private WeakReference<ReadingContentActivity> mActivity;
+
+        public CommentHandler(ReadingContentActivity activity){
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            String response = (String) msg.obj;
+            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
+            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList,R.layout.comment_item);
+            mActivity.get().mLvReadingComment.setAdapter(adapter);
+        }
+    }
+
     /**
      * 阅读评论的展示
      * @param address 获取数据的api地址
      */
     public void setReadingCommentView(String address){
-        final Handler mHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg){
-                String response = (String) msg.obj;
-                ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-                CommentAdapter adapter = new CommentAdapter(ReadingContentActivity.this, R.layout.comment_item, commentList);
-                mLvReadingComment.setAdapter(adapter);
-            }
-        };
 
         HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override

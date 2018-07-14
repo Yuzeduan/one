@@ -2,7 +2,6 @@ package com.yuzeduan.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBar;
@@ -10,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.Spanned;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,6 +24,7 @@ import com.yuzeduan.util.ImageCallback;
 import com.yuzeduan.util.ImageHttpUtil;
 import com.yuzeduan.util.ParseJSONUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -36,6 +37,7 @@ public class MusicContentActivity extends AppCompatActivity {
             mTvDate, mTvContent;
     private ImageView mIvCover;
     private String mItemId;
+    private Handler mHandler = new CommentHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,12 @@ public class MusicContentActivity extends AppCompatActivity {
         String commentAddress = " http://v3.wufazhuce.com:8000/api/comment/praiseandtime/music/"+mItemId+"/0?platform=android";
         setMusicView(contentAddress);
         setMusicCommentView(commentAddress);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -90,22 +98,26 @@ public class MusicContentActivity extends AppCompatActivity {
         }
     }
 
+    public static class CommentHandler extends Handler{
+        private  WeakReference<MusicContentActivity> mActivity;
+
+        public CommentHandler(MusicContentActivity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            String response = (String) msg.obj;
+            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
+            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList, R.layout.comment_item);
+            mActivity.get().mLvMusicComment.setAdapter(adapter);
+        }
+    }
     /**
      * 进行音乐评论界面的展示
      * @param address 表示获取数据用的api地址
      */
     public void setMusicCommentView(String address){
-        // 采用异步信息处理机制,从子线程获取数据后在主线程进行数据的解析和展示
-        final Handler mHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg){
-                String response = (String) msg.obj;
-                ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-                CommentAdapter adapter = new CommentAdapter(MusicContentActivity.this, R.layout.comment_item, commentList);
-                mLvMusicComment.setAdapter(adapter);
-            }
-        };
-
         HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override
             public void onFinish(String response) {
@@ -114,7 +126,6 @@ public class MusicContentActivity extends AppCompatActivity {
                 mHandler.sendMessage(message);
             }
         });
-
     }
 
     /**
@@ -122,11 +133,12 @@ public class MusicContentActivity extends AppCompatActivity {
      * @param address 表示获取数据所用的api地址
      */
     public void queryFromServer(final String address){
+        final Handler handler = new Handler();
         HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override
             public void onFinish(String response) {
                 ParseJSONUtil.parseMusic(response);
-                runOnUiThread(new Runnable() {
+                handler.post(new Runnable() {
                     @Override
                     public void run() {
                         // 获取数据后重新调用展示数据的方法,此时数据库中已有缓存

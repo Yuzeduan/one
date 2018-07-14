@@ -19,6 +19,7 @@ import com.yuzeduan.util.HttpCallbackListener;
 import com.yuzeduan.util.HttpUtil;
 import com.yuzeduan.util.ParseJSONUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -29,6 +30,7 @@ public class MovieContentActivity extends AppCompatActivity {
     private ListView mLvMovieComment;  // 展示影视评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
+    private Handler mHandler = new CommentHandler(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,12 @@ public class MovieContentActivity extends AppCompatActivity {
         setMovieCommentView(commentAddress);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
     /**
      * 展示影视详情界面的方法
      * @param address 表示获取影视详情的api地址
@@ -73,22 +81,27 @@ public class MovieContentActivity extends AppCompatActivity {
         }
     }
 
+    public static class CommentHandler extends Handler{
+        private WeakReference<MovieContentActivity> mActivity;
+
+        public CommentHandler(MovieContentActivity activity){
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            String response = (String) msg.obj;
+            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
+            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList, R.layout.comment_item);
+            mActivity.get().mLvMovieComment.setAdapter(adapter);
+        }
+    }
+
     /**
      * 显示影视评论的界面
      * @param address 表示获取影视评论的api地址
      */
     public void setMovieCommentView(String address){
-        // 采用异步信息处理机制,从子线程获取数据,在主线程进行解析并展示
-        final Handler mHandler = new Handler(){
-            @Override
-            public void handleMessage(Message msg){
-                String response = (String) msg.obj;
-                ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-                CommentAdapter adapter = new CommentAdapter(MovieContentActivity.this, R.layout.comment_item, commentList);
-                mLvMovieComment.setAdapter(adapter);
-            }
-        };
-
         HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override
             public void onFinish(String response) {
