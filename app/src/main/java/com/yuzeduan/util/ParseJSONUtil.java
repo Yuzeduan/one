@@ -1,5 +1,7 @@
 package com.yuzeduan.util;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Inset;
 import com.yuzeduan.bean.InsetId;
@@ -21,8 +23,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import static com.yuzeduan.activity.MainActivity.READING;
+import static com.yuzeduan.bean.Constant.READING;
 
 
 /**
@@ -31,6 +34,8 @@ import static com.yuzeduan.activity.MainActivity.READING;
  */
 
 public class ParseJSONUtil {
+    private static Gson gson = new Gson();
+
     /**
      * 对获取的阅读列表数据或者音乐列表数据进行解析,并将结果封装成对象,存放在容器中返回
      * @param jsonData 表示从api中获取的关于阅读列表和音乐列表的JSON数据
@@ -38,45 +43,17 @@ public class ParseJSONUtil {
      * @return 返回存放了封装了解析结果数据的对象的容器
      */
     public static ArrayList<ReadingMusicList> parseReadingMusicList(String jsonData, int flag){
-        try {
-            ReadingListDao readingListDao = new ReadingListDao();
-            MusicListDao musicListDao = new MusicListDao();
-            ArrayList<ReadingMusicList> list = new ArrayList<>();
-            JSONObject jsonObject = new JSONObject(jsonData);
-            JSONArray dataArray = jsonObject.getJSONArray("data");
-            for(int i = 0; i < dataArray.length(); i++) {
-                JSONObject data = dataArray.getJSONObject(i);
-                String id = data.getString("id");
-                String item_id = data.getString("item_id");
-                String title = data.getString("title");
-                String forward = data.getString("forward");
-                String img_url = data.getString("img_url");
-                String last_update_date = data.getString("last_update_date");
-                JSONObject author = data.getJSONObject("author");
-                String user_name = author.getString("user_name");
-                String desc = author.getString("desc");
-                ReadingMusicList element = new ReadingMusicList();
-                element.setId(id);
-                element.setmItemId(item_id);
-                element.setmTitle(title);
-                element.setmForword(forward);
-                element.setmImgUrl(img_url);
-                element.setmLastUpdateDate(last_update_date);
-                element.setmUserName(user_name);
-                element.setmDesc(desc);
-                list.add(element);
-                if(flag == READING){
-                    readingListDao.addReadingList(element);
-                }
-                else{
-                    musicListDao.addMusicList(element);
-                }
-            }
-            return list;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
+        ReadingListDao readingListDao = new ReadingListDao();
+        MusicListDao musicListDao = new MusicListDao();
+        String data = getJsonData(jsonData);
+        ArrayList<ReadingMusicList> list = gson.fromJson(data, new TypeToken<List<ReadingMusicList>>(){}.getType());
+        if(flag == READING){
+            readingListDao.addReadingList(list);
         }
+        else{
+            musicListDao.addMusicList(list);
+        }
+        return list;
     }
 
     /**
@@ -85,39 +62,11 @@ public class ParseJSONUtil {
      * @return 返回存放了封装了JSON数据解析后的数据Bean对象的容器
      */
     public static ArrayList<MovieList> parseMovieList(String jsonData){
-        try {
-            MovieListDao movieListDao = new MovieListDao();
-            ArrayList<MovieList> MovieList = new ArrayList<>();
-            JSONObject jsonObject = new JSONObject(jsonData);
-            JSONArray dataArray = jsonObject.getJSONArray("data");
-            for(int i = 0; i < dataArray.length(); i++) {
-                JSONObject data = dataArray.getJSONObject(i);
-                String item_id = data.getString("item_id");
-                String title = data.getString("title");
-                String forward = data.getString("forward");
-                String img_url = data.getString("img_url");
-                String last_update_date = data.getString("last_update_date");
-                String subtitle = data.getString("subtitle");
-                JSONObject author = data.getJSONObject("author");
-                String user_name = author.getString("user_name");
-                String desc = author.getString("desc");
-                MovieList movie = new MovieList();
-                movie.setmItemId(item_id);
-                movie.setmTitle(title);
-                movie.setmForword(forward);
-                movie.setmImgUrl(img_url);
-                movie.setmLastUpdateDate(last_update_date);
-                movie.setmSubtitle(subtitle);
-                movie.setmUserName(user_name);
-                movie.setmDesc(desc);
-                MovieList.add(movie);
-                movieListDao.addMovieList(movie);
-            }
-            return MovieList;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        MovieListDao movieListDao = new MovieListDao();
+        String data = getJsonData(jsonData);
+        ArrayList<MovieList> list = gson.fromJson(data, new TypeToken<List<MovieList>>(){}.getType());
+        movieListDao.addMovieList(list);
+        return list;
     }
 
     /**
@@ -149,28 +98,11 @@ public class ParseJSONUtil {
      * @return 返回封装了解析结果数据的对象
      */
     public static Reading parseReading(String jsonData){
-        try {
-            ReadingDao readingDao = new ReadingDao();
-            JSONObject jsonObject = new JSONObject(jsonData);
-            JSONObject data = jsonObject.getJSONObject("data");
-            String itemId = data.getString("content_id");
-            String title = data.getString("hp_title");
-            String authorName = data.getString("hp_author");
-            String content = data.getString("hp_content");
-            String lastUpdateDate = data.getString("last_update_date");
-            Reading reading = new Reading();
-            reading.setmItemId(itemId);
-            reading.setmTitle(title);
-            reading.setmAuthorName(authorName);
-            reading.setmContent(content);
-            reading.setmContent(content);
-            reading.setmLastUpdateDate(lastUpdateDate);
-            readingDao.addReading(reading);
-            return reading;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        ReadingDao readingDao = new ReadingDao();
+        String data = getJsonData(jsonData);
+        Reading reading = gson.fromJson(data, Reading.class);
+        readingDao.addReading(reading);
+        return reading;
     }
 
     /**
@@ -179,35 +111,11 @@ public class ParseJSONUtil {
      * @return 返回封装了解析后的数据的对象
      */
     public static Music parseMusic(String jsonData){
-        try {
-            MusicDao musicDao = new MusicDao();
-            Music music = new Music();
-            JSONObject jsonObject = new JSONObject(jsonData);
-            JSONObject data = jsonObject.getJSONObject("data");
-            String itemId = data.getString("id");
-            String musicTitle = data.getString("title");
-            String cover = data.getString("cover");
-            String storyTitle = data.getString("story_title");
-            String storyContent = data.getString("story");
-            String lastUpdateDate = data.getString("last_update_date");
-            JSONObject author = data.getJSONObject("author");
-            String musicUserName = author.getString("user_name");
-            JSONObject storyAuthor = data.getJSONObject("story_author");
-            String storyAuthorName = storyAuthor.getString("user_name");
-            music.setmItemId(itemId);
-            music.setmMusicTitle(musicTitle);
-            music.setmCover(cover);
-            music.setmStoryTitle(storyTitle);
-            music.setmStoryContent(storyContent);
-            music.setmLastUpdateDate(lastUpdateDate);
-            music.setmMusicUserName(musicUserName);
-            music.setmStoryAuthorName(storyAuthorName);
-            musicDao.addMusic(music);
-            return music;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        MusicDao musicDao = new MusicDao();
+        String data = getJsonData(jsonData);
+        Music music = gson.fromJson(data, Music.class);
+        musicDao.addMusic(music);
+        return music;
     }
 
     /**
@@ -218,26 +126,12 @@ public class ParseJSONUtil {
     public static Movie parseMovie(String jsonData) {
         try {
             MovieDao movieDao = new MovieDao();
-            Movie movie = new Movie();
             JSONObject jsonObject = new JSONObject(jsonData);
             JSONObject data = jsonObject.getJSONObject("data");
-            JSONArray dataArray = data.getJSONArray("data");
-            for (int i = 0; i < dataArray.length(); i++) {
-                JSONObject datas = dataArray.getJSONObject(i);
-                String itemId = datas.getString("movie_id");
-                String title = datas.getString("title");
-                String content = datas.getString("content");
-                String inputDate = datas.getString("input_date");
-                JSONObject user = datas.getJSONObject("user");
-                String userName = user.getString("user_name");
-                movie.setmItemId(itemId);
-                movie.setmTitle(title);
-                movie.setmContent(content);
-                movie.setmInputDate(inputDate);
-                movie.setmAuthorName(userName);
-            }
-            movieDao.addMovie(movie);
-            return movie;
+            String datas = data.getString("data");
+            List<Movie> movie = gson.fromJson(datas, new TypeToken<List<Movie>>(){}.getType());
+            movieDao.addMovie(movie.get(0));
+            return movie.get(0);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -250,29 +144,11 @@ public class ParseJSONUtil {
      * @return 将解析的JSON数据封装成一个插画Bean对象,并返回
      */
     public static Inset parseInset(String jsonData){
-        try {
-            InsetDao insetDao = new InsetDao();
-            Inset inset = new Inset();
-            JSONObject jsonObject = new JSONObject(jsonData);
-            JSONObject data = jsonObject.getJSONObject("data");
-            String title = data.getString("hp_title");
-            String imgUrl = data.getString("hp_img_url");
-            String hpAuthor = data.getString("hp_author");
-            String content = data.getString("hp_content");
-            String lastUpdateDate = data.getString("last_update_date");
-            String imageAuthor = data.getString("image_authors");
-            inset.setmTitle(title);
-            inset.setmImgUrl(imgUrl);
-            inset.setmHpAuthor(hpAuthor);
-            inset.setmContent(content);
-            inset.setmLastUpdateDate(lastUpdateDate);
-            inset.setmImageAuthor(imageAuthor);
-            insetDao.addInset(inset);
-            return inset;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        InsetDao insetDao = new InsetDao();
+        String data = getJsonData(jsonData);
+        Inset inset = gson.fromJson(data, Inset.class);
+        insetDao.addInset(inset);
+        return inset;
     }
 
     /**
@@ -282,23 +158,21 @@ public class ParseJSONUtil {
      */
     public static ArrayList<Comment> parseComment(String jsonData) {
         try {
-            ArrayList<Comment> list = new ArrayList<>();
             JSONObject jsonObject = new JSONObject(jsonData);
             JSONObject data = jsonObject.getJSONObject("data");
-            JSONArray data1 = data.getJSONArray("data");
-            for (int i = 0; i < data1.length(); i++) {
-                JSONObject datas = data1.getJSONObject(i);
-                String content = datas.getString("content");
-                String createdTime = datas.getString("created_at");
-                JSONObject user = datas.getJSONObject("user");
-                String userName = user.getString("user_name");
-                Comment comment = new Comment();
-                comment.setmContent(content);
-                comment.setmCreateTime(createdTime);
-                comment.setmUserName(userName);
-                list.add(comment);
-            }
+            String datas = data.getString("data");
+            ArrayList<Comment>list = gson.fromJson(datas, new TypeToken<List<Comment>>(){}.getType());
             return list;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String getJsonData(String jsonData){
+        try {
+            JSONObject jsonObject = new JSONObject(jsonData);
+            return jsonObject.getString("data");
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

@@ -15,8 +15,8 @@ public class MovieAdapter extends CommonAdapter<MovieList> {
         viewHolder.setText(R.id.tv_forward, item.getmForword());
         viewHolder.setText(R.id.tv_date, item.getmLastUpdateDate());
         viewHolder.setText(R.id.tv_subtitle, item.getmSubtitle());
-        viewHolder.setText(R.id.tv_author_name, item.getmUserName());
-        viewHolder.setText(R.id.tv_desc, item.getmDesc());
+        viewHolder.setText(R.id.tv_author_name, "文 / " + item.getmAuthor().getmUserName());
+        viewHolder.setText(R.id.tv_desc, item.getmAuthor().getmDesc());
     }
 
     public MovieAdapter(Context mContext, List<MovieList> mDatas, int mItemLayoutId) {

@@ -1,15 +1,22 @@
 package com.yuzeduan.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by YZD on 2018/5/19.
  */
 
 public class Movie {
+    @SerializedName("movie_id")
     private String mItemId;
+    @SerializedName("title")
     private String mTitle;
+    @SerializedName("content")
     private String mContent;
+    @SerializedName("input_date")
     private String mInputDate;
-    private String mAuthorName;
+    @SerializedName("user")
+    private Author mAuthor;
 
     public String getmItemId() {
         return mItemId;
@@ -43,11 +50,11 @@ public class Movie {
         this.mInputDate = mInputDate;
     }
 
-    public String getmAuthorName() {
-        return mAuthorName;
+    public Author getmAuthor() {
+        return mAuthor;
     }
 
-    public void setmAuthorName(String mAuthorName) {
-        this.mAuthorName = mAuthorName;
+    public void setmAuthor(Author mAuthor) {
+        this.mAuthor = mAuthor;
     }
 }

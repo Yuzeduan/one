@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
+import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Movie;
 import com.yuzeduan.db.MovieDao;
 import com.yuzeduan.util.HttpCallbackListener;
@@ -49,8 +50,8 @@ public class MovieContentActivity extends AppCompatActivity {
         }
         Intent intent = getIntent();  // 获取上一活动传来的Intent对象
         mItemId = intent.getStringExtra("id");  // 从Intent对象中获取具体的id
-        String contentAddress = "http://v3.wufazhuce.com:8000/api/movie/"+mItemId+"/story/1/0?platform=android";
-        String commentAddress = " http://v3.wufazhuce.com:8000/api/comment/praiseandtime/movie/"+mItemId+"/0?&platform=android";
+        String contentAddress = Constant.createMovieUrl(mItemId);
+        String commentAddress = Constant.createMovieCommentUrl(mItemId);
         setMovieView(contentAddress);
         setMovieCommentView(commentAddress);
     }
@@ -71,7 +72,7 @@ public class MovieContentActivity extends AppCompatActivity {
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
         if(movie != null){
             mTvTitle.setText(movie.getmTitle());
-            mTvAuthor.setText("文 | " + movie.getmAuthorName());
+            mTvAuthor.setText("文 | " + movie.getmAuthor().getmUserName());
             Spanned spanned = Html.fromHtml(movie.getmContent());
             mTvContent.setText(spanned);
             mTvDate.setText(movie.getmInputDate());

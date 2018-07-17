@@ -1,13 +1,18 @@
 package com.yuzeduan.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by YZD on 2018/5/19.
  */
 
 public class Comment {
+    @SerializedName("content")
     private String mContent;
+    @SerializedName("created_at")
     private String mCreateTime;
-    private String mUserName;
+    @SerializedName("user")
+    private Author mUser;
 
     public String getmContent() {
         return mContent;
@@ -25,11 +30,11 @@ public class Comment {
         this.mCreateTime = mCreateTime;
     }
 
-    public String getmUserName() {
-        return mUserName;
+    public Author getmUser() {
+        return mUser;
     }
 
-    public void setmUserName(String mUserName) {
-        this.mUserName = mUserName;
+    public void setmUser(Author mUser) {
+        this.mUser = mUser;
     }
 }

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.SystemClock;
 
+import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.InsetId;
 import com.yuzeduan.util.HttpCallbackListener;
 import com.yuzeduan.util.HttpUtil;
@@ -16,13 +17,13 @@ import com.yuzeduan.util.SyncHttpUtil;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static com.yuzeduan.activity.MainActivity.INSET;
-import static com.yuzeduan.activity.MainActivity.MOVIE;
-import static com.yuzeduan.activity.MainActivity.MUSIC;
-import static com.yuzeduan.activity.MainActivity.READING;
+import static com.yuzeduan.bean.Constant.INSET;
 import static com.yuzeduan.bean.Constant.INSETID_URL;
+import static com.yuzeduan.bean.Constant.MOVIE;
 import static com.yuzeduan.bean.Constant.MOVIELIST_URL;
+import static com.yuzeduan.bean.Constant.MUSIC;
 import static com.yuzeduan.bean.Constant.MUSICLIST_URL;
+import static com.yuzeduan.bean.Constant.READING;
 import static com.yuzeduan.bean.Constant.READINGLIST_URL;
 
 public class AutoUpdateService extends Service {
@@ -59,7 +60,7 @@ public class AutoUpdateService extends Service {
             while (it.hasNext()) {
                 insetId = it.next();
                 String id = insetId.getmInsetId();
-                String insetAddress = "http://v3.wufazhuce.com:8000/api/hp/detail/" + id + "?version=3.5.0&platform=android";
+                String insetAddress = Constant.createInsetUrl(id);
                 String insetResponse = SyncHttpUtil.getJSON(insetAddress);
                 ParseJSONUtil.parseInset(insetResponse);
             }

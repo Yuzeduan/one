@@ -2,6 +2,7 @@ package com.yuzeduan.service;
 
 import android.os.AsyncTask;
 
+import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.ReadingMusicList;
 import com.yuzeduan.util.CacheUtil;
 import com.yuzeduan.util.ParseJSONUtil;
@@ -15,8 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static com.yuzeduan.activity.MainActivity.READING;
-
+import static com.yuzeduan.bean.Constant.READING;
 
 public class DownloadTask extends AsyncTask<String, Integer, Void> {
     private int lastProgress;
@@ -57,17 +57,17 @@ public class DownloadTask extends AsyncTask<String, Integer, Void> {
         int total = 1;
         for(int i = 0; i < time; i++){
             if( i > 0){
-                url = "http://v3.wufazhuce.com:8000/api/channel/reading/more/" +id+ "?channel=wdj&version=4.0.2&platform=android";
+                url = Constant.createReadListUrl(id);
             }
             listResponse = getJSON(url);
             ArrayList<ReadingMusicList> list = ParseJSONUtil.parseReadingMusicList(listResponse, READING);
             reading = list.get(list.size() - 1);
-            id = reading.getId();
+            id = reading.getmId();
             Iterator<ReadingMusicList> it = list.iterator();
             while (it.hasNext()){
                 reading = it.next();
                 itemId = reading.getmItemId();
-                readingAddress = "http://v3.wufazhuce.com:8000/api/essay/" + itemId +"?platform=android";
+                readingAddress = Constant.createReadingUrl(itemId);
                 itemResponse = getJSON(readingAddress);
                 ParseJSONUtil.parseReading(itemResponse);
                 publishProgress(total * 2);

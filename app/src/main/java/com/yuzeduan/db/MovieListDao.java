@@ -4,10 +4,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.yuzeduan.bean.Author;
 import com.yuzeduan.bean.MovieList;
 import com.yuzeduan.util.OneApplication;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * 对数据库中的影视列表的数据进行增添和查询操作
@@ -21,19 +23,24 @@ public class MovieListDao {
 
     /**
      * 添加影视列表的数据进数据库
-     * @param movie 表示封装了添加数据的影视列表对象
+     * @param list 表示盛放封装了添加数据的影视列表对象的容器
      */
-    public void addMovieList(MovieList movie){
-        ContentValues values = new ContentValues();
-        values.put("item_id", movie.getmItemId());
-        values.put("title", movie.getmTitle());
-        values.put("forword", movie.getmForword());
-        values.put("img_url", movie.getmImgUrl());
-        values.put("last_update_date", movie.getmLastUpdateDate());
-        values.put("subtitle", movie.getmSubtitle());
-        values.put("user_name", movie.getmUserName());
-        values.put("desc", movie.getmDesc());
-        writedb.insert("movie_list", null, values);
+    public void addMovieList(ArrayList<MovieList> list){
+        Iterator<MovieList> iterator = list.iterator();
+        MovieList movie;
+        while(iterator.hasNext()){
+            movie = iterator.next();
+            ContentValues values = new ContentValues();
+            values.put("item_id", movie.getmItemId());
+            values.put("title", movie.getmTitle());
+            values.put("forword", movie.getmForword());
+            values.put("img_url", movie.getmImgUrl());
+            values.put("last_update_date", movie.getmLastUpdateDate());
+            values.put("subtitle", movie.getmSubtitle());
+            values.put("user_name", movie.getmAuthor().getmUserName());
+            values.put("desc", movie.getmAuthor().getmDesc());
+            writedb.insert("movie_list", null, values);
+        }
     }
 
     /**
@@ -42,7 +49,7 @@ public class MovieListDao {
      */
     public ArrayList<MovieList> findMovieList(){
         ArrayList<MovieList> list = new ArrayList<>();
-        Cursor cursor = readdb.query("movie_list", null, null, null, null ,null, "id desc");
+        Cursor cursor = readdb.query("movie_list", null, null, null, null ,null, "id desc", "15");
         if(cursor.moveToFirst()){
             do{
                 String itemId = cursor.getString(cursor.getColumnIndex("item_id"));
@@ -60,8 +67,10 @@ public class MovieListDao {
                 movie.setmImgUrl(imgUrl);
                 movie.setmLastUpdateDate(lastUpdateDate);
                 movie.setmSubtitle(subTitle);
-                movie.setmUserName(userName);
-                movie.setmDesc(desc);
+                Author author = new Author();
+                author.setmUserName(userName);
+                author.setmDesc(desc);
+                movie.setmAuthor(author);
                 list.add(movie);
             }while (cursor.moveToNext());
             cursor.close();

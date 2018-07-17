@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
+import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Reading;
 import com.yuzeduan.db.ReadingDao;
 import com.yuzeduan.util.HttpCallbackListener;
@@ -48,8 +49,8 @@ public class ReadingContentActivity extends AppCompatActivity {
         }
         Intent intent = getIntent();
         mItemId = intent.getStringExtra("id");
-        String contentAddress = "http://v3.wufazhuce.com:8000/api/essay/"+mItemId+"?platform=android";
-        String commentAddress = " http://v3.wufazhuce.com:8000/api/comment/praiseandtime/essay/"+mItemId+"/0?&platform=android";
+        String contentAddress = Constant.createReadingUrl(mItemId);
+        String commentAddress = Constant.createReadingCommentUrl(mItemId);
         setReadingView(contentAddress);
         setReadingCommentView(commentAddress);
     }

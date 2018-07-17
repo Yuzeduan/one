@@ -1,14 +1,21 @@
 package com.yuzeduan.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by YZD on 2018/5/19.
  */
 
 public class Reading {
+    @SerializedName("content_id")
     private String mItemId;
+    @SerializedName("hp_title")
     private String mTitle;
+    @SerializedName("hp_author")
     private String mAuthorName;
+    @SerializedName("hp_content")
     private String mContent;
+    @SerializedName("last_update_date")
     private String mLastUpdateDate;
 
     public String getmItemId() {

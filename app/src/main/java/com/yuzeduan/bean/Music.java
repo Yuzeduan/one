@@ -1,18 +1,28 @@
 package com.yuzeduan.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by YZD on 2018/5/19.
  */
 
 public class Music {
+    @SerializedName("id")
     private String mItemId;
+    @SerializedName("title")
     private String mMusicTitle;
+    @SerializedName("cover")
     private String mCover;
+    @SerializedName("story_title")
     private String mStoryTitle;
+    @SerializedName("story")
     private String mStoryContent;
+    @SerializedName("last_update_date")
     private String mLastUpdateDate;
-    private String mMusicUserName;
-    private String mStoryAuthorName;
+    @SerializedName("author")
+    private Author mAuthor;
+    @SerializedName("story_author")
+    private StoryAuthor mStoryAuthor;
 
     public String getmItemId() {
         return mItemId;
@@ -62,19 +72,20 @@ public class Music {
         this.mLastUpdateDate = mLastUpdateDate;
     }
 
-    public String getmMusicUserName() {
-        return mMusicUserName;
+    public Author getmAuthor() {
+        return mAuthor;
     }
 
-    public void setmMusicUserName(String mMusicUserName) {
-        this.mMusicUserName = mMusicUserName;
+    public void setmAuthor(Author mAuthor) {
+        this.mAuthor = mAuthor;
     }
 
-    public String getmStoryAuthorName() {
-        return mStoryAuthorName;
+    public StoryAuthor getmStoryAuthor() {
+        return mStoryAuthor;
     }
 
-    public void setmStoryAuthorName(String mStoryAuthorName) {
-        this.mStoryAuthorName = mStoryAuthorName;
+    public void setmStoryAuthor(StoryAuthor mStoryAuthor) {
+        this.mStoryAuthor = mStoryAuthor;
     }
 }
+

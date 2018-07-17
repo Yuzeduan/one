@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
+import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Music;
 import com.yuzeduan.db.MusicDao;
 import com.yuzeduan.util.HttpCallbackListener;
@@ -58,8 +59,8 @@ public class MusicContentActivity extends AppCompatActivity {
         }
         Intent intent = getIntent();
         mItemId = intent.getStringExtra("id");
-        String contentAddress = "http://v3.wufazhuce.com:8000/api/music/detail/"+mItemId+"?version=3.5.0&platform=android";
-        String commentAddress = " http://v3.wufazhuce.com:8000/api/comment/praiseandtime/music/"+mItemId+"/0?platform=android";
+        String contentAddress = Constant.createMusicUrl(mItemId);
+        String commentAddress = Constant.createMusicCommentUrl(mItemId);
         setMusicView(contentAddress);
         setMusicCommentView(commentAddress);
     }
@@ -81,8 +82,8 @@ public class MusicContentActivity extends AppCompatActivity {
         if(music != null){
             mTvMusicTitle.setText("歌曲 | " + music.getmMusicTitle());
             mTvStoryTitle.setText(music.getmStoryTitle());
-            mTvStoryAuthorName.setText("文 | " + music.getmStoryAuthorName());
-            mTvMusicUserName.setText("歌曲 | " + music.getmMusicUserName());
+            mTvStoryAuthorName.setText("文 | " + music.getmStoryAuthor().getmAuthorName());
+            mTvMusicUserName.setText("歌曲 | " + music.getmAuthor().getmUserName());
             mTvDate.setText(music.getmLastUpdateDate());
             Spanned spanned = Html.fromHtml(music.getmStoryContent());
             mTvContent.setText(spanned);

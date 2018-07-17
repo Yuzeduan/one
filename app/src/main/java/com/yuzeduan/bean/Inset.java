@@ -1,15 +1,19 @@
 package com.yuzeduan.bean;
 
-/**
- * Created by YZD on 2018/5/18.
- */
+import com.google.gson.annotations.SerializedName;
 
 public class Inset {
+    @SerializedName("hp_title")
     private String mTitle;
+    @SerializedName("hp_img_url")
     private String mImgUrl;
+    @SerializedName("hp_content")
     private String mContent;
+    @SerializedName("image_authors")
     private String mImageAuthor;
+    @SerializedName("hp_author")
     private String mHpAuthor;
+    @SerializedName("last_update_date")
     private String mLastUpdateDate;
 
     public String getmTitle() {
@@ -60,4 +64,3 @@ public class Inset {
         this.mLastUpdateDate = mLastUpdateDate;
     }
 }
-

@@ -5,6 +5,10 @@ package com.yuzeduan.bean;
  */
 
 public class Constant {
+    public static final int READING = 0;
+    public static final int MUSIC = 1;
+    public static final int MOVIE = 2;
+    public static final int INSET = 3;
     public static final String READINGLIST_URL = "http://v3.wufazhuce.com:8000/api/channel/reading/more/12808?channel=wdj&version=4.0.2&platform=android";
     public static final String MUSICLIST_URL = "http://v3.wufazhuce.com:8000/api/channel/music/more/13046?platform=android";
     public static final String MOVIELIST_URL = "http://v3.wufazhuce.com:8000/api/channel/movie/more/13758?platform=android";

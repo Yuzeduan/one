@@ -4,7 +4,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.yuzeduan.bean.Author;
 import com.yuzeduan.bean.Music;
+import com.yuzeduan.bean.StoryAuthor;
 import com.yuzeduan.util.OneApplication;
 
 /**
@@ -29,8 +31,8 @@ public class MusicDao {
         values.put("story_title", music.getmStoryTitle());
         values.put("story_content", music.getmStoryContent());
         values.put("last_update_date", music.getmLastUpdateDate());
-        values.put("music_user_name", music.getmMusicUserName());
-        values.put("story_author_name", music.getmStoryAuthorName());
+        values.put("music_user_name", music.getmAuthor().getmUserName());
+        values.put("story_author_name", music.getmStoryAuthor().getmAuthorName());
         writedb.insert("music", null, values);
     }
 
@@ -59,8 +61,12 @@ public class MusicDao {
             music.setmStoryTitle(storyTitle);
             music.setmStoryContent(storyContent);
             music.setmLastUpdateDate(lastUpdateDate);
-            music.setmMusicUserName(musicUserName);
-            music.setmStoryAuthorName(storyAuthorName);
+            Author author = new Author();
+            author.setmUserName(musicUserName);
+            StoryAuthor storyAuthor = new StoryAuthor();
+            storyAuthor.setmAuthorName(storyAuthorName);
+            music.setmAuthor(author);
+            music.setmStoryAuthor(storyAuthor);
             cursor.close();
             return music;
         }

@@ -1,18 +1,26 @@
 package com.yuzeduan.bean;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by YZD on 2018/5/18.
  */
 
 public class MovieList {
+    @SerializedName("item_id")
     private String mItemId;
+    @SerializedName("title")
     private String mTitle;
+    @SerializedName("forward")
     private String mForword;
+    @SerializedName("img_url")
     private String mImgUrl;
+    @SerializedName("last_update_date")
     private String mLastUpdateDate;
+    @SerializedName("subtitle")
     private String mSubtitle;
-    private String mUserName;
-    private String mDesc;
+    @SerializedName("author")
+    private Author mAuthor;
 
     public String getmItemId() {
         return mItemId;
@@ -62,20 +70,12 @@ public class MovieList {
         this.mSubtitle = mSubtitle;
     }
 
-    public String getmUserName() {
-        return mUserName;
+    public Author getmAuthor() {
+        return mAuthor;
     }
 
-    public void setmUserName(String mUserName) {
-        this.mUserName = mUserName;
-    }
-
-    public String getmDesc() {
-        return mDesc;
-    }
-
-    public void setmDesc(String mDesc) {
-        this.mDesc = mDesc;
+    public void setmAuthor(Author mAuthor) {
+        this.mAuthor = mAuthor;
     }
 }
 

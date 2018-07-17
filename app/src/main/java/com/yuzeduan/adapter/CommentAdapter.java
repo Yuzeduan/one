@@ -10,7 +10,7 @@ import java.util.List;
 public class CommentAdapter extends CommonAdapter<Comment> {
     @Override
     public void convert(ViewHolder viewHolder, Comment item) {
-        viewHolder.setText(R.id.tv_user_name, item.getmUserName());
+        viewHolder.setText(R.id.tv_user_name, item.getmUser().getmUserName());
         viewHolder.setText(R.id.tv_created_time, item.getmCreateTime());
         viewHolder.setText(R.id.tv_content, item.getmContent());
     }

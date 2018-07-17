@@ -27,7 +27,7 @@ public class MovieDao {
         values.put("title", movie.getmTitle());
         values.put("content", movie.getmContent());
         values.put("input_date", movie.getmInputDate());
-        values.put("author_name", movie.getmAuthorName());
+        values.put("author_name", movie.getmAuthor().getmUserName());
         writedb.insert("movie", null, values);
     }
 
@@ -51,7 +51,7 @@ public class MovieDao {
             movie.setmTitle(title);
             movie.setmContent(content);
             movie.setmInputDate(inputDate);
-            movie.setmAuthorName(authorName);
+            movie.getmAuthor().setmUserName(authorName);
             cursor.close();
             return movie;
         }

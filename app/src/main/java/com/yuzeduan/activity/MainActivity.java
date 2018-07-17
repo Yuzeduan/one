@@ -1,6 +1,5 @@
 package com.yuzeduan.activity;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
@@ -47,13 +45,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.yuzeduan.bean.Constant.INSET;
 import static com.yuzeduan.bean.Constant.INSETID_URL;
+import static com.yuzeduan.bean.Constant.MOVIE;
 import static com.yuzeduan.bean.Constant.MOVIELIST_URL;
+import static com.yuzeduan.bean.Constant.MUSIC;
 import static com.yuzeduan.bean.Constant.MUSICLIST_URL;
 import static com.yuzeduan.bean.Constant.NEW_INSETID_URL;
 import static com.yuzeduan.bean.Constant.NEW_MOVIELIST_URL;
 import static com.yuzeduan.bean.Constant.NEW_MUSICLIST_URL;
 import static com.yuzeduan.bean.Constant.NEW_READINGLIST_URL;
+import static com.yuzeduan.bean.Constant.READING;
 import static com.yuzeduan.bean.Constant.READINGLIST_URL;
 
 
@@ -61,10 +63,6 @@ import static com.yuzeduan.bean.Constant.READINGLIST_URL;
  * app主界面,包含了阅读,音乐,影视,插画四个类型的轮播图
  */
 public class MainActivity extends AppCompatActivity {
-    public static final int READING = 0;
-    public static final int MUSIC = 1;
-    public static final int MOVIE = 2;
-    public static final int INSET = 3;
     private List<View> mViewList = new ArrayList<>();  // 用于存放View对象
     private ListView mLvReading, mLvMusic, mLvMovie, mLvInset;  // 用于展示列表的控件
     private ArrayList<ReadingMusicList> mReadingList, mMusicList;

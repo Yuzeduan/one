@@ -40,7 +40,7 @@ public class InsetDao {
      */
     public ArrayList<Inset> findInset(){
         ArrayList<Inset> list = new ArrayList<>();
-        Cursor cursor = readdb.query("inset", null, null, null, null ,null, "id desc");
+        Cursor cursor = readdb.query("inset", null, null, null, null ,null, "id desc","15");
         if(cursor.moveToFirst()){
             do{
                 String title = cursor.getString(cursor.getColumnIndex("title"));

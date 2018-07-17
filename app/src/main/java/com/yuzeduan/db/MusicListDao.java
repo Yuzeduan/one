@@ -4,10 +4,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.yuzeduan.bean.Author;
 import com.yuzeduan.bean.ReadingMusicList;
 import com.yuzeduan.util.OneApplication;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * 对数据库中的音乐列表的数据进行增添和查询操作
@@ -21,18 +23,23 @@ public class MusicListDao {
 
     /**
      * 添加音乐列表的数据进数据库中
-     * @param music 表示封装了添加数据的音乐列表的对象
+     * @param list 表示盛放了封装了添加数据的音乐列表的对象的容器
      */
-    public void addMusicList(ReadingMusicList music){
-        ContentValues values = new ContentValues();
-        values.put("item_id", music.getmItemId());
-        values.put("title", music.getmTitle());
-        values.put("forword", music.getmForword());
-        values.put("img_url", music.getmImgUrl());
-        values.put("last_update_date", music.getmLastUpdateDate());
-        values.put("user_name", music.getmUserName());
-        values.put("desc", music.getmDesc());
-        writedb.insert("music_list", null, values);
+    public void addMusicList(ArrayList<ReadingMusicList> list){
+        Iterator<ReadingMusicList> iterator = list.iterator();
+        ReadingMusicList music;
+        while(iterator.hasNext()){
+            music = iterator.next();
+            ContentValues values = new ContentValues();
+            values.put("item_id", music.getmItemId());
+            values.put("title", music.getmTitle());
+            values.put("forword", music.getmForword());
+            values.put("img_url", music.getmImgUrl());
+            values.put("last_update_date", music.getmLastUpdateDate());
+            values.put("user_name", music.getmAuthor().getmDesc());
+            values.put("desc", music.getmAuthor().getmDesc());
+            writedb.insert("music_list", null, values);
+        }
     }
 
     /**
@@ -41,7 +48,7 @@ public class MusicListDao {
      */
     public ArrayList<ReadingMusicList> findMusicList(){
         ArrayList<ReadingMusicList> list = new ArrayList<>();
-        Cursor cursor = readdb.query("music_list", null, null, null, null ,null, "id desc");
+        Cursor cursor = readdb.query("music_list", null, null, null, null ,null, "id desc", "15");
         if(cursor.moveToFirst()){
             do{
                 String itemId = cursor.getString(cursor.getColumnIndex("item_id"));
@@ -57,8 +64,10 @@ public class MusicListDao {
                 music.setmForword(forword);
                 music.setmImgUrl(imgUrl);
                 music.setmLastUpdateDate(lastUpdateDate);
-                music.setmUserName(userName);
-                music.setmDesc(desc);
+                Author author = new Author();
+                author.setmUserName(userName);
+                author.setmDesc(desc);
+                music.setmAuthor(author);
                 list.add(music);
             }while (cursor.moveToNext());
             cursor.close();

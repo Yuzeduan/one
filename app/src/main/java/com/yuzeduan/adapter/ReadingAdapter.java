@@ -14,8 +14,8 @@ public class ReadingAdapter extends CommonAdapter<ReadingMusicList>{
         viewHolder.setBitmap(R.id.iv_reading, item.getmImgUrl());
         viewHolder.setText(R.id.tv_forward, item.getmForword());
         viewHolder.setText(R.id.tv_date, item.getmForword());
-        viewHolder.setText(R.id.tv_author_name, item.getmUserName());
-        viewHolder.setText(R.id.tv_desc, "文 / "+ item.getmDesc());
+        viewHolder.setText(R.id.tv_author_name, "文 / "+ item.getmAuthor().getmUserName());
+        viewHolder.setText(R.id.tv_desc,item.getmAuthor().getmDesc());
     }
 
     public ReadingAdapter(Context context, List<ReadingMusicList> list, int itemLayoutId){
