@@ -1,8 +1,6 @@
 package com.yuzeduan.activity;
 
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,12 +14,12 @@ import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Movie;
 import com.yuzeduan.db.MovieDao;
-import com.yuzeduan.util.HttpCallbackListener;
-import com.yuzeduan.util.HttpUtil;
-import com.yuzeduan.util.ParseJSONUtil;
+import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentModel;
+import com.yuzeduan.model.ContentModel;
+import java.util.List;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import static com.yuzeduan.bean.Constant.MOVIE;
 
 /**
  * 用于展示影视详细的界面
@@ -31,7 +29,8 @@ public class MovieContentActivity extends AppCompatActivity {
     private ListView mLvMovieComment;  // 展示影视评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
-    private Handler mHandler = new CommentHandler(this);
+    private ContentModel contentModel = new ContentModel();
+    private CommentModel commentModel = new CommentModel();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +58,13 @@ public class MovieContentActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**
      * 展示影视详情界面的方法
      * @param address 表示获取影视详情的api地址
      */
-    public void setMovieView(String address){
+    public void setMovieView(final String address){
         MovieDao movieDao = new MovieDao();
         Movie movie = movieDao.findMovie(mItemId);
         // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
@@ -78,23 +76,16 @@ public class MovieContentActivity extends AppCompatActivity {
             mTvDate.setText(movie.getmInputDate());
         }
         else{
-            queryFromServer(address);
-        }
-    }
+            contentModel.queryContentData(address, MOVIE, new CallbackListener() {
+                @Override
+                public void onFinish() {
+                    setMovieView(address);
+                }
 
-    public static class CommentHandler extends Handler{
-        private WeakReference<MovieContentActivity> mActivity;
-
-        public CommentHandler(MovieContentActivity activity){
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            String response = (String) msg.obj;
-            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList, R.layout.comment_item);
-            mActivity.get().mLvMovieComment.setAdapter(adapter);
+                @Override
+                public void onStringFinish(List<Comment> list) {
+                }
+            });
         }
     }
 
@@ -103,32 +94,15 @@ public class MovieContentActivity extends AppCompatActivity {
      * @param address 表示获取影视评论的api地址
      */
     public void setMovieCommentView(String address){
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
+        commentModel.queryCommentData(address, new CallbackListener() {
             @Override
-            public void onFinish(String response) {
-                Message message = new Message();
-                message.obj = response;
-                mHandler.sendMessage(message);
+            public void onFinish() {
             }
-        });
-    }
 
-    /**
-     * 从服务器中获取数据
-     * @param address 表示获取数据的api地址
-     */
-    public void queryFromServer(final String address){
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override
-            public void onFinish(String response) {
-                ParseJSONUtil.parseMovie(response);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // 获取数据后重新调用展示数据的方法,此时数据库中已有缓存
-                        setMovieView(address);
-                    }
-                });
+            public void onStringFinish(List<Comment> list) {
+                CommentAdapter adapter = new CommentAdapter(MovieContentActivity.this, list, R.layout.comment_item);
+                mLvMovieComment.setAdapter(adapter);
             }
         });
     }

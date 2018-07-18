@@ -1,8 +1,6 @@
 package com.yuzeduan.activity;
 
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,12 +14,12 @@ import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Reading;
 import com.yuzeduan.db.ReadingDao;
-import com.yuzeduan.util.HttpCallbackListener;
-import com.yuzeduan.util.HttpUtil;
-import com.yuzeduan.util.ParseJSONUtil;
+import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentModel;
+import com.yuzeduan.model.ContentModel;
+import java.util.List;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import static com.yuzeduan.bean.Constant.READING;
 
 /**
  * 展示阅读详情和阅读评论的界面
@@ -31,7 +29,8 @@ public class ReadingContentActivity extends AppCompatActivity {
     private ListView mLvReadingComment;  // 展示阅读评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
-    private Handler mHandler = new CommentHandler(this);
+    private ContentModel contentModel = new ContentModel();
+    private CommentModel commentModel = new CommentModel();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +58,7 @@ public class ReadingContentActivity extends AppCompatActivity {
      * 展示阅读详情的界面
      * @param address 获取数据的api地址
      */
-    public void setReadingView(String address){
+    public void setReadingView(final String address){
         ReadingDao readingDao = new ReadingDao();
         Reading reading = readingDao.findReading(mItemId);
         //  // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
@@ -71,64 +70,39 @@ public class ReadingContentActivity extends AppCompatActivity {
             mTvDate.setText(reading.getmLastUpdateDate());
         }
         else {
-            queryFromServer(address);
+            contentModel.queryContentData(address, READING, new CallbackListener() {
+                @Override
+                public void onFinish() {
+                    setReadingView(address);
+                }
+
+                @Override
+                public void onStringFinish(List<Comment> list) {
+                }
+            });
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
     }
 
-    public static class CommentHandler extends Handler{
-        private WeakReference<ReadingContentActivity> mActivity;
-
-        public CommentHandler(ReadingContentActivity activity){
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            String response = (String) msg.obj;
-            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList,R.layout.comment_item);
-            mActivity.get().mLvReadingComment.setAdapter(adapter);
-        }
-    }
 
     /**
      * 阅读评论的展示
      * @param address 获取数据的api地址
      */
     public void setReadingCommentView(String address){
-
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
+        commentModel.queryCommentData(address, new CallbackListener() {
             @Override
-            public void onFinish(String response) {
-                Message message = new Message();
-                message.obj = response;
-                mHandler.sendMessage(message);
+            public void onFinish() {
             }
-        });
-    }
 
-    /**
-     * 从服务器获取数据
-     * @param address 用于获取数据的api地址
-     */
-    public void queryFromServer(final String address){
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
             @Override
-            public void onFinish(String response) {
-                ParseJSONUtil.parseReading(response);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // 获取数据后重新调用展示数据的方法,此时数据库中已有缓存
-                        setReadingView(address);
-                    }
-                });
+            public void onStringFinish(List<Comment> list) {
+                CommentAdapter adapter = new CommentAdapter(ReadingContentActivity.this, list, R.layout.comment_item);
+                mLvReadingComment.setAdapter(adapter);
             }
         });
     }

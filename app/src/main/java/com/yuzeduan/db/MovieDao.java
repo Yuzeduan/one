@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.yuzeduan.bean.Author;
 import com.yuzeduan.bean.Movie;
 import com.yuzeduan.util.OneApplication;
 
@@ -51,7 +52,9 @@ public class MovieDao {
             movie.setmTitle(title);
             movie.setmContent(content);
             movie.setmInputDate(inputDate);
-            movie.getmAuthor().setmUserName(authorName);
+            Author author = new Author();
+            author.setmUserName(authorName);
+            movie.setmAuthor(author);
             cursor.close();
             return movie;
         }

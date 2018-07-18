@@ -2,14 +2,11 @@ package com.yuzeduan.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.Spanned;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -19,15 +16,14 @@ import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Music;
 import com.yuzeduan.db.MusicDao;
-import com.yuzeduan.util.HttpCallbackListener;
-import com.yuzeduan.util.HttpUtil;
+import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentModel;
+import com.yuzeduan.model.ContentModel;
 import com.yuzeduan.util.ImageCallback;
 import com.yuzeduan.util.ImageHttpUtil;
-import com.yuzeduan.util.ParseJSONUtil;
+import java.util.List;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
+import static com.yuzeduan.bean.Constant.MUSIC;
 /**
  * 用于展示音乐详情的界面
  * 通过接收上一活动传来的音乐详情具体id,进行音乐详情和该音乐评论的信息的获取和展示
@@ -38,7 +34,8 @@ public class MusicContentActivity extends AppCompatActivity {
             mTvDate, mTvContent;
     private ImageView mIvCover;
     private String mItemId;
-    private Handler mHandler = new CommentHandler(this);
+    private ContentModel contentModel = new ContentModel();
+    private CommentModel commentModel = new CommentModel();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +65,13 @@ public class MusicContentActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**
      * 进行音乐详情的展示
      * @param address 表示获取数据的api地址
      */
-    public void setMusicView(String address){
+    public void setMusicView(final String address){
         MusicDao musicDao = new MusicDao();
         Music music = musicDao.findMusic(mItemId);
         // 判断数据库是否有缓存,如果有缓存,则直接从数据库获取数据并展示,若无,则从服务器获取数据
@@ -95,58 +91,36 @@ public class MusicContentActivity extends AppCompatActivity {
             });
         }
         else {
-            queryFromServer(address);
+            contentModel.queryContentData(address, MUSIC, new CallbackListener() {
+                @Override
+                public void onFinish() {
+                    setMusicView(address);
+                }
+                @Override
+                public void onStringFinish(List<Comment> list) {
+
+                }
+            });
         }
     }
 
-    public static class CommentHandler extends Handler{
-        private  WeakReference<MusicContentActivity> mActivity;
 
-        public CommentHandler(MusicContentActivity activity) {
-            mActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            String response = (String) msg.obj;
-            ArrayList<Comment> commentList = ParseJSONUtil.parseComment(response);
-            CommentAdapter adapter = new CommentAdapter(mActivity.get(), commentList, R.layout.comment_item);
-            mActivity.get().mLvMusicComment.setAdapter(adapter);
-        }
-    }
     /**
      * 进行音乐评论界面的展示
      * @param address 表示获取数据用的api地址
      */
     public void setMusicCommentView(String address){
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
+        commentModel.queryCommentData(address, new CallbackListener() {
             @Override
-            public void onFinish(String response) {
-                Message message = new Message();
-                message.obj = response;
-                mHandler.sendMessage(message);
+            public void onFinish() {
+            }
+
+            @Override
+            public void onStringFinish(List<Comment> list) {
+                CommentAdapter adapter = new CommentAdapter(MusicContentActivity.this, list, R.layout.comment_item);
+                mLvMusicComment.setAdapter(adapter);
             }
         });
     }
 
-    /**
-     * 从服务器获取数据
-     * @param address 表示获取数据所用的api地址
-     */
-    public void queryFromServer(final String address){
-        final Handler handler = new Handler();
-        HttpUtil.getJSON(address, new HttpCallbackListener(){
-            @Override
-            public void onFinish(String response) {
-                ParseJSONUtil.parseMusic(response);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // 获取数据后重新调用展示数据的方法,此时数据库中已有缓存
-                        setMusicView(address);
-                    }
-                });
-            }
-        });
-    }
 }
