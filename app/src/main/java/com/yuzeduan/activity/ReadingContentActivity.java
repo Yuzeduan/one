@@ -13,13 +13,12 @@ import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Reading;
-import com.yuzeduan.db.ReadingDao;
-import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentCallback;
 import com.yuzeduan.model.CommentModel;
-import com.yuzeduan.model.ContentModel;
-import java.util.List;
+import com.yuzeduan.model.ReadingContentCallback;
+import com.yuzeduan.model.ReadingContentModel;
 
-import static com.yuzeduan.bean.Constant.READING;
+import java.util.List;
 
 /**
  * 展示阅读详情和阅读评论的界面
@@ -29,7 +28,7 @@ public class ReadingContentActivity extends AppCompatActivity {
     private ListView mLvReadingComment;  // 展示阅读评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
-    private ContentModel contentModel = new ContentModel();
+    private ReadingContentModel mReadingContentModel = new ReadingContentModel();
     private CommentModel commentModel = new CommentModel();
 
     @Override
@@ -58,29 +57,17 @@ public class ReadingContentActivity extends AppCompatActivity {
      * 展示阅读详情的界面
      * @param address 获取数据的api地址
      */
-    public void setReadingView(final String address){
-        ReadingDao readingDao = new ReadingDao();
-        Reading reading = readingDao.findReading(mItemId);
-        //  // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(reading != null){
-            mTvTitle.setText(reading.getmTitle());
-            mTvAuthor.setText("文 | " + reading.getmAuthorName());
-            Spanned spanned = Html.fromHtml(reading.getmContent());
-            mTvContent.setText(spanned);
-            mTvDate.setText(reading.getmLastUpdateDate());
-        }
-        else {
-            contentModel.queryContentData(address, READING, new CallbackListener() {
-                @Override
-                public void onFinish() {
-                    setReadingView(address);
-                }
-
-                @Override
-                public void onStringFinish(List<Comment> list) {
-                }
-            });
-        }
+    public void setReadingView(String address){
+        mReadingContentModel.getReadingData(mItemId, address, new ReadingContentCallback() {
+            @Override
+            public void onFinish(Reading reading) {
+                mTvTitle.setText(reading.getmTitle());
+                mTvAuthor.setText("文 | " + reading.getmAuthorName());
+                Spanned spanned = Html.fromHtml(reading.getmContent());
+                mTvContent.setText(spanned);
+                mTvDate.setText(reading.getmLastUpdateDate());
+            }
+        });
     }
 
     @Override
@@ -94,13 +81,9 @@ public class ReadingContentActivity extends AppCompatActivity {
      * @param address 获取数据的api地址
      */
     public void setReadingCommentView(String address){
-        commentModel.queryCommentData(address, new CallbackListener() {
+        commentModel.queryCommentData(address, new CommentCallback() {
             @Override
-            public void onFinish() {
-            }
-
-            @Override
-            public void onStringFinish(List<Comment> list) {
+            public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(ReadingContentActivity.this, list, R.layout.comment_item);
                 mLvReadingComment.setAdapter(adapter);
             }

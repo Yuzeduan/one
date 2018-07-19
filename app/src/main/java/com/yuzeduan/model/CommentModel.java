@@ -1,23 +1,22 @@
 package com.yuzeduan.model;
 
-import com.android.volley.Response;
-import com.android.volley.toolbox.StringRequest;
 import com.yuzeduan.bean.Comment;
+import com.yuzeduan.util.HttpCallbackListener;
 import com.yuzeduan.util.ParseJSONUtil;
+import com.yuzeduan.util.VolleyUtil;
 
 import java.util.List;
 
-import static com.yuzeduan.util.OneApplication.requestQueue;
-
 public class CommentModel {
-    public void queryCommentData(String url, final CallbackListener listener){
-        StringRequest request = new StringRequest(url, new Response.Listener<String>() {
+    private List<Comment> mCommentList;
+
+    public void queryCommentData(String url, final CommentCallback listener){
+        VolleyUtil.getDataByVolley(url, new HttpCallbackListener() {
             @Override
-            public void onResponse(String s) {
-                List<Comment> list = ParseJSONUtil.parseComment(s);
-                listener.onStringFinish(list);
+            public void onFinish(String response) {
+                mCommentList = ParseJSONUtil.parseComment(response);
+                listener.onFinish(mCommentList);
             }
-        }, null);
-        requestQueue.add(request);
+        });
     }
 }

@@ -10,7 +10,7 @@ import java.net.URL;
 /**
  * Created by YZD on 2018/5/18.
  */
-
+@Deprecated
 public class HttpUtil {
     public static void sendRequestWithHttpURLConnection(final String address, final HttpCallbackListener listener) {
         new Thread(new Runnable() {

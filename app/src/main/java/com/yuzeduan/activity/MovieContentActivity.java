@@ -13,13 +13,12 @@ import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Movie;
-import com.yuzeduan.db.MovieDao;
-import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentCallback;
 import com.yuzeduan.model.CommentModel;
-import com.yuzeduan.model.ContentModel;
-import java.util.List;
+import com.yuzeduan.model.MovieContentCallback;
+import com.yuzeduan.model.MovieContentModel;
 
-import static com.yuzeduan.bean.Constant.MOVIE;
+import java.util.List;
 
 /**
  * 用于展示影视详细的界面
@@ -29,7 +28,7 @@ public class MovieContentActivity extends AppCompatActivity {
     private ListView mLvMovieComment;  // 展示影视评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
-    private ContentModel contentModel = new ContentModel();
+    private MovieContentModel mMovieContentModel = new MovieContentModel();
     private CommentModel commentModel = new CommentModel();
 
     @Override
@@ -64,29 +63,17 @@ public class MovieContentActivity extends AppCompatActivity {
      * 展示影视详情界面的方法
      * @param address 表示获取影视详情的api地址
      */
-    public void setMovieView(final String address){
-        MovieDao movieDao = new MovieDao();
-        Movie movie = movieDao.findMovie(mItemId);
-        // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if(movie != null){
-            mTvTitle.setText(movie.getmTitle());
-            mTvAuthor.setText("文 | " + movie.getmAuthor().getmUserName());
-            Spanned spanned = Html.fromHtml(movie.getmContent());
-            mTvContent.setText(spanned);
-            mTvDate.setText(movie.getmInputDate());
-        }
-        else{
-            contentModel.queryContentData(address, MOVIE, new CallbackListener() {
-                @Override
-                public void onFinish() {
-                    setMovieView(address);
-                }
-
-                @Override
-                public void onStringFinish(List<Comment> list) {
-                }
-            });
-        }
+    public void setMovieView(String address){
+        mMovieContentModel.getMovieData(mItemId, address, new MovieContentCallback() {
+            @Override
+            public void onFinish(Movie movie) {
+                mTvTitle.setText(movie.getmTitle());
+                mTvAuthor.setText("文 | " + movie.getmAuthor().getmUserName());
+                Spanned spanned = Html.fromHtml(movie.getmContent());
+                mTvContent.setText(spanned);
+                mTvDate.setText(movie.getmInputDate());
+            }
+        });
     }
 
     /**
@@ -94,13 +81,9 @@ public class MovieContentActivity extends AppCompatActivity {
      * @param address 表示获取影视评论的api地址
      */
     public void setMovieCommentView(String address){
-        commentModel.queryCommentData(address, new CallbackListener() {
+        commentModel.queryCommentData(address, new CommentCallback() {
             @Override
-            public void onFinish() {
-            }
-
-            @Override
-            public void onStringFinish(List<Comment> list) {
+            public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(MovieContentActivity.this, list, R.layout.comment_item);
                 mLvMovieComment.setAdapter(adapter);
             }

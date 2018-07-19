@@ -17,7 +17,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import com.yuzeduan.Fragment.InsetFragment;
@@ -26,7 +25,8 @@ import com.yuzeduan.Fragment.MusicFragment;
 import com.yuzeduan.Fragment.ReadingFragment;
 import com.yuzeduan.adapter.FragAdapter;
 import com.yuzeduan.bean.ReadingMusicList;
-import com.yuzeduan.db.ReadingListDao;
+import com.yuzeduan.model.ReadingListCallback;
+import com.yuzeduan.model.ReadingListModel;
 import com.yuzeduan.service.AutoUpdateService;
 import com.yuzeduan.service.DownloadService;
 
@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.yuzeduan.bean.Constant.NEW_READINGLIST_URL;
+import static com.yuzeduan.bean.Constant.READINGLIST_URL;
 
 /**
  * app主界面,包含了阅读,音乐,影视,插画四个类型的轮播图
@@ -110,21 +111,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendNotification() {
-        ReadingListDao musicListDao = new ReadingListDao();
-        mReadingList = musicListDao.findReadingList();
-        Iterator<ReadingMusicList> it = mReadingList.iterator();
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, 0);
-        ReadingMusicList reading = it.next();
-        NotificationManager manger = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new NotificationCompat.Builder(this)
-                .setContentTitle(reading.getmTitle())
-                .setContentText(reading.getmForword())
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(R.mipmap.one)
-                .setContentIntent(pi)
-                .setAutoCancel(true)
-                .build();
-        manger.notify(2, notification);
+        ReadingListModel readingListModel = new ReadingListModel();
+        readingListModel.getReadingListData(READINGLIST_URL, new ReadingListCallback() {
+            @Override
+            public void onRefresh() {
+            }
+
+            @Override
+            public void onFinish(List<ReadingMusicList> list) {
+                mReadingList = list;
+                Iterator<ReadingMusicList> it = mReadingList.iterator();
+                Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                PendingIntent pi = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+                ReadingMusicList reading = it.next();
+                NotificationManager manger = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                Notification notification = new NotificationCompat.Builder(MainActivity.this)
+                        .setContentTitle(reading.getmTitle())
+                        .setContentText(reading.getmForword())
+                        .setWhen(System.currentTimeMillis())
+                        .setSmallIcon(R.mipmap.one)
+                        .setContentIntent(pi)
+                        .setAutoCancel(true)
+                        .build();
+                manger.notify(2, notification);
+            }
+        });
     }
 }

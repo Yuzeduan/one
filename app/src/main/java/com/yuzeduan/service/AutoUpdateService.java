@@ -7,19 +7,17 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.SystemClock;
 
-import com.yuzeduan.model.ListDataModel;
+import com.yuzeduan.model.InsetModel;
+import com.yuzeduan.model.MovieListModel;
+import com.yuzeduan.model.MusicListModel;
+import com.yuzeduan.model.ReadingListModel;
 
-import static com.yuzeduan.bean.Constant.INSET;
 import static com.yuzeduan.bean.Constant.NEW_INSETID_URL;
-import static com.yuzeduan.bean.Constant.MOVIE;
 import static com.yuzeduan.bean.Constant.NEW_MOVIELIST_URL;
-import static com.yuzeduan.bean.Constant.MUSIC;
 import static com.yuzeduan.bean.Constant.NEW_MUSICLIST_URL;
-import static com.yuzeduan.bean.Constant.READING;
 import static com.yuzeduan.bean.Constant.NEW_READINGLIST_URL;
 
 public class AutoUpdateService extends Service {
-    private ListDataModel listDataModel = new ListDataModel();
 
     public AutoUpdateService() {
     }
@@ -31,10 +29,10 @@ public class AutoUpdateService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        listDataModel.queryDataFromServer(NEW_READINGLIST_URL, READING, null);
-        listDataModel.queryDataFromServer(NEW_MUSICLIST_URL, MUSIC, null);
-        listDataModel.queryDataFromServer(NEW_MOVIELIST_URL, MOVIE, null);
-        listDataModel.queryDataFromServer(NEW_INSETID_URL, INSET, null);
+        new ReadingListModel().queryReadingListData(NEW_READINGLIST_URL, 0, null);
+        new MusicListModel().queryMusicListData(NEW_MUSICLIST_URL, 0, null);
+        new MovieListModel().queryMovieListData(NEW_MOVIELIST_URL, 0, null);
+        new InsetModel().queryInsetListData(NEW_INSETID_URL, 0, null);
         AlarmManager manager = (AlarmManager)getSystemService(ALARM_SERVICE);
         int anHour = 24 * 60 * 60 * 1000; // 一天的毫秒数
         long triggerAtTime = SystemClock.elapsedRealtime() + anHour;

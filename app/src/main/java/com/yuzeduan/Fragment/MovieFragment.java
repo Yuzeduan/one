@@ -14,23 +14,21 @@ import android.widget.ListView;
 import com.yuzeduan.activity.MovieContentActivity;
 import com.yuzeduan.activity.R;
 import com.yuzeduan.adapter.MovieAdapter;
-import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.MovieList;
-import com.yuzeduan.db.MovieListDao;
-import com.yuzeduan.model.CallbackListener;
-import com.yuzeduan.model.ListDataModel;
+import com.yuzeduan.model.MovieListCallback;
+import com.yuzeduan.model.MovieListModel;
 
 import java.util.List;
 
-import static com.yuzeduan.bean.Constant.MOVIE;
-import static com.yuzeduan.bean.Constant.NEW_MOVIELIST_URL;
 import static com.yuzeduan.bean.Constant.MOVIELIST_URL;
+import static com.yuzeduan.bean.Constant.NEW_MOVIELIST_URL;
+import static com.yuzeduan.bean.Constant.REFRESH_DATA;
 
 public class MovieFragment extends Fragment{
     private ListView mListView;
     private SwipeRefreshLayout mSwipeRefresh;
     private List<MovieList> mMovieList;
-    private ListDataModel listDataModel = new ListDataModel();
+    private MovieListModel mMovieListModel = new MovieListModel();
 
     @Nullable
     @Override
@@ -44,36 +42,29 @@ public class MovieFragment extends Fragment{
     }
 
     public void setView(){
-        MovieListDao movieListDao = new MovieListDao();
-        mMovieList = movieListDao.findMovieList();
-        // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if (mMovieList != null) {
-            MovieAdapter adapter = new MovieAdapter(getActivity(), mMovieList, R.layout.movie_item);
-            mListView.setAdapter(adapter);
-            // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
-            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    MovieList movie = mMovieList.get(position);
-                    String item_id = movie.getmItemId();
-                    Intent intent = new Intent(getActivity(), MovieContentActivity.class);
-                    intent.putExtra("id", item_id);
-                    startActivity(intent);
-                }
-            });
-        }
-        else {
-           listDataModel.queryDataFromServer(MOVIELIST_URL, MOVIE, new CallbackListener() {
-               @Override
-               public void onFinish() {
-                   setView();
-               }
+        mMovieListModel.getMovieListData(MOVIELIST_URL, new MovieListCallback() {
+            @Override
+            public void onRefresh() {
+            }
 
-               @Override
-               public void onStringFinish(List<Comment> list) {
-               }
-           });
-        }
+            @Override
+            public void onFinish(List<MovieList> list) {
+                mMovieList = list;
+                MovieAdapter adapter = new MovieAdapter(getActivity(), mMovieList, R.layout.movie_item);
+                mListView.setAdapter(adapter);
+                // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
+                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        MovieList movie = mMovieList.get(position);
+                        String item_id = movie.getmItemId();
+                        Intent intent = new Intent(getActivity(), MovieContentActivity.class);
+                        intent.putExtra("id", item_id);
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
     }
 
     public void refreshView(){
@@ -81,14 +72,14 @@ public class MovieFragment extends Fragment{
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
             @Override
             public void onRefresh() {
-                listDataModel.queryDataFromServer(NEW_MOVIELIST_URL, MOVIE, new CallbackListener() {
+                mMovieListModel.queryMovieListData(NEW_MOVIELIST_URL, REFRESH_DATA, new MovieListCallback() {
                     @Override
-                    public void onFinish() {
+                    public void onRefresh() {
                         setView();
                     }
 
                     @Override
-                    public void onStringFinish(List<Comment> list) {
+                    public void onFinish(List<MovieList> list) {
                     }
                 });
                 mSwipeRefresh.setRefreshing(false);

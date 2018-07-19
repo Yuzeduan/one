@@ -13,7 +13,7 @@ import java.util.concurrent.FutureTask;
  * 暂时堵塞主线程,进行同步网络操作,获取网络数据,并且将数据进行本地缓存
  * Created by YZD on 2018/5/20.
  */
-
+@Deprecated
 public class SyncHttpUtil {
     /**
      * 开启子线程,并且暂时堵塞主线程,进行网络操作,获取网络数据,并且将数据进行本地缓存

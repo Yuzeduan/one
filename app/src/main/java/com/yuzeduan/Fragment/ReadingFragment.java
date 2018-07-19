@@ -14,23 +14,21 @@ import android.widget.ListView;
 import com.yuzeduan.activity.R;
 import com.yuzeduan.activity.ReadingContentActivity;
 import com.yuzeduan.adapter.ReadingAdapter;
-import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.ReadingMusicList;
-import com.yuzeduan.db.ReadingListDao;
-import com.yuzeduan.model.CallbackListener;
-import com.yuzeduan.model.ListDataModel;
+import com.yuzeduan.model.ReadingListCallback;
+import com.yuzeduan.model.ReadingListModel;
 
 import java.util.List;
 
-import static com.yuzeduan.bean.Constant.READING;
 import static com.yuzeduan.bean.Constant.READINGLIST_URL;
 import static com.yuzeduan.bean.Constant.NEW_READINGLIST_URL;
+import static com.yuzeduan.bean.Constant.REFRESH_DATA;
 
 public class ReadingFragment extends Fragment{
     private ListView mListView;
     private SwipeRefreshLayout mSwipeRefresh;
     private List<ReadingMusicList> mReadingList;
-    private ListDataModel listDataModel = new ListDataModel();
+    private ReadingListModel mReadingListModel = new ReadingListModel();
 
     @Nullable
     @Override
@@ -43,37 +41,30 @@ public class ReadingFragment extends Fragment{
         return view;
     }
 
-    public void setView(){
-        ReadingListDao readingListDao = new ReadingListDao();
-        mReadingList = readingListDao.findReadingList();
-        // 判断数据库中是否有缓存,如果有,直接从数据库获取并展示,若无,则从服务器中获取
-        if (mReadingList != null) {
-            ReadingAdapter adapter = new ReadingAdapter(getActivity(), mReadingList, R.layout.reading_item);
-            mListView.setAdapter(adapter);
-            // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
-            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ReadingMusicList reading = mReadingList.get(position);
-                    String item_id = reading.getmItemId();
-                    Intent intent = new Intent(getActivity(), ReadingContentActivity.class);
-                    intent.putExtra("id", item_id);
-                    startActivity(intent);
-                }
-            });
-        }
-        else {
-            listDataModel.queryDataFromServer(READINGLIST_URL, READING, new CallbackListener() {
-                @Override
-                public void onFinish() {
-                    setView();
-                }
+    public void setView() {
+        mReadingListModel.getReadingListData(READINGLIST_URL, new ReadingListCallback() {
+            @Override
+            public void onRefresh() {
+            }
 
-                @Override
-                public void onStringFinish(List<Comment> list) {
-                }
-            });
-        }
+            @Override
+            public void onFinish(List<ReadingMusicList> list) {
+                mReadingList = list;
+                ReadingAdapter adapter = new ReadingAdapter(getActivity(), mReadingList, R.layout.reading_item);
+                mListView.setAdapter(adapter);
+                // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
+                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        ReadingMusicList reading = mReadingList.get(position);
+                        String item_id = reading.getmItemId();
+                        Intent intent = new Intent(getActivity(), ReadingContentActivity.class);
+                        intent.putExtra("id", item_id);
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
     }
 
     public void refreshView(){
@@ -81,16 +72,16 @@ public class ReadingFragment extends Fragment{
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
             @Override
             public void onRefresh() {
-                listDataModel.queryDataFromServer(NEW_READINGLIST_URL, READING, new CallbackListener() {
-                    @Override
-                    public void onFinish() {
-                        setView();
-                    }
+                 mReadingListModel.queryReadingListData(NEW_READINGLIST_URL, REFRESH_DATA, new ReadingListCallback() {
+                     @Override
+                     public void onRefresh() {
+                         setView();
+                     }
 
-                    @Override
-                    public void onStringFinish(List<Comment> list) {
-                    }
-                });
+                     @Override
+                     public void onFinish(List<ReadingMusicList> list) {
+                     }
+                 });
                 mSwipeRefresh.setRefreshing(false);
             }
         });

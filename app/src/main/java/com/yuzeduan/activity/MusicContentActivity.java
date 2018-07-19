@@ -15,15 +15,14 @@ import com.yuzeduan.adapter.CommentAdapter;
 import com.yuzeduan.bean.Comment;
 import com.yuzeduan.bean.Constant;
 import com.yuzeduan.bean.Music;
-import com.yuzeduan.db.MusicDao;
-import com.yuzeduan.model.CallbackListener;
+import com.yuzeduan.model.CommentCallback;
 import com.yuzeduan.model.CommentModel;
-import com.yuzeduan.model.ContentModel;
+import com.yuzeduan.model.MusicContentCallback;
+import com.yuzeduan.model.MusicContentModel;
 import com.yuzeduan.util.ImageCallback;
 import com.yuzeduan.util.ImageHttpUtil;
 import java.util.List;
 
-import static com.yuzeduan.bean.Constant.MUSIC;
 /**
  * 用于展示音乐详情的界面
  * 通过接收上一活动传来的音乐详情具体id,进行音乐详情和该音乐评论的信息的获取和展示
@@ -34,7 +33,7 @@ public class MusicContentActivity extends AppCompatActivity {
             mTvDate, mTvContent;
     private ImageView mIvCover;
     private String mItemId;
-    private ContentModel contentModel = new ContentModel();
+    private MusicContentModel mMusicContentModel = new MusicContentModel();
     private CommentModel commentModel = new CommentModel();
 
     @Override
@@ -71,37 +70,25 @@ public class MusicContentActivity extends AppCompatActivity {
      * 进行音乐详情的展示
      * @param address 表示获取数据的api地址
      */
-    public void setMusicView(final String address){
-        MusicDao musicDao = new MusicDao();
-        Music music = musicDao.findMusic(mItemId);
-        // 判断数据库是否有缓存,如果有缓存,则直接从数据库获取数据并展示,若无,则从服务器获取数据
-        if(music != null){
-            mTvMusicTitle.setText("歌曲 | " + music.getmMusicTitle());
-            mTvStoryTitle.setText(music.getmStoryTitle());
-            mTvStoryAuthorName.setText("文 | " + music.getmStoryAuthor().getmAuthorName());
-            mTvMusicUserName.setText("歌曲 | " + music.getmAuthor().getmUserName());
-            mTvDate.setText(music.getmLastUpdateDate());
-            Spanned spanned = Html.fromHtml(music.getmStoryContent());
-            mTvContent.setText(spanned);
-            ImageHttpUtil.setImage(music.getmCover(), new ImageCallback() {
-                @Override
-                public void getBitmap(Bitmap bitmap) {
-                    mIvCover.setImageBitmap(bitmap);
-                }
-            });
-        }
-        else {
-            contentModel.queryContentData(address, MUSIC, new CallbackListener() {
-                @Override
-                public void onFinish() {
-                    setMusicView(address);
-                }
-                @Override
-                public void onStringFinish(List<Comment> list) {
-
-                }
-            });
-        }
+    public void setMusicView(String address){
+        mMusicContentModel.getMusicData(mItemId, address, new MusicContentCallback() {
+            @Override
+            public void onFinish(Music music) {
+                mTvMusicTitle.setText("歌曲 | " + music.getmMusicTitle());
+                mTvStoryTitle.setText(music.getmStoryTitle());
+                mTvStoryAuthorName.setText("文 | " + music.getmStoryAuthor().getmAuthorName());
+                mTvMusicUserName.setText("歌曲 | " + music.getmAuthor().getmUserName());
+                mTvDate.setText(music.getmLastUpdateDate());
+                Spanned spanned = Html.fromHtml(music.getmStoryContent());
+                mTvContent.setText(spanned);
+                ImageHttpUtil.setImage(music.getmCover(), new ImageCallback() {
+                    @Override
+                    public void getBitmap(Bitmap bitmap) {
+                        mIvCover.setImageBitmap(bitmap);
+                    }
+                });
+            }
+        });
     }
 
 
@@ -110,17 +97,12 @@ public class MusicContentActivity extends AppCompatActivity {
      * @param address 表示获取数据用的api地址
      */
     public void setMusicCommentView(String address){
-        commentModel.queryCommentData(address, new CallbackListener() {
+        commentModel.queryCommentData(address, new CommentCallback() {
             @Override
-            public void onFinish() {
-            }
-
-            @Override
-            public void onStringFinish(List<Comment> list) {
+            public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(MusicContentActivity.this, list, R.layout.comment_item);
                 mLvMusicComment.setAdapter(adapter);
             }
         });
     }
-
 }
