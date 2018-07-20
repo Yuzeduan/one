@@ -6,8 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.Spanned;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
@@ -27,7 +26,8 @@ import java.util.List;
  */
 public class MovieContentActivity extends AppCompatActivity {
     private RecyclerView mRvMovieComment;// 展示影视评论列表的控件
-    private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
+    private TextView mTvTitle, mTvAuthor, mTvDate;
+    private WebView mWvContent;
     private String mItemId;
     private MovieContentModel mMovieContentModel = new MovieContentModel();
     private CommentModel commentModel = new CommentModel();
@@ -38,11 +38,12 @@ public class MovieContentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_content);
         mTvTitle = (TextView)findViewById(R.id.movie_tv_title);
         mTvAuthor = (TextView)findViewById(R.id.movie_tv_author);
-        mTvContent = (TextView)findViewById(R.id.movie_tv_content);
+        mWvContent = findViewById(R.id.movie_wv_content);
         mTvDate = (TextView)findViewById(R.id.movie_tv_date);
         mRvMovieComment = findViewById(R.id.movie_rv_comment);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mRvMovieComment.setLayoutManager(manager);
+        mRvMovieComment.setFocusable(false);
         //隐藏主标题栏
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -71,8 +72,7 @@ public class MovieContentActivity extends AppCompatActivity {
             public void onFinish(Movie movie) {
                 mTvTitle.setText(movie.getmTitle());
                 mTvAuthor.setText("文 | " + movie.getmAuthor().getmUserName());
-                Spanned spanned = Html.fromHtml(movie.getmContent());
-                mTvContent.setText(spanned);
+                mWvContent.loadDataWithBaseURL(null, movie.getmContent(), null,null,null);
                 mTvDate.setText(movie.getmInputDate());
             }
         });

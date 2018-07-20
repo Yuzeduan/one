@@ -6,8 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.Spanned;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
@@ -27,7 +26,8 @@ import java.util.List;
  */
 public class ReadingContentActivity extends AppCompatActivity {
     private RecyclerView mRvReadingComment;  // 展示阅读评论列表的控件
-    private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
+    private TextView mTvTitle, mTvAuthor, mTvDate;
+    private WebView mWvContent;
     private String mItemId;
     private ReadingContentModel mReadingContentModel = new ReadingContentModel();
     private CommentModel commentModel = new CommentModel();
@@ -38,11 +38,12 @@ public class ReadingContentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reading_content);
         mTvTitle = (TextView)findViewById(R.id.reading_tv_title);
         mTvAuthor = (TextView)findViewById(R.id.reading_tv_author);
-        mTvContent = (TextView)findViewById(R.id.reading_tv_content);
+        mWvContent = findViewById(R.id.reading_wv_content);
         mTvDate = (TextView)findViewById(R.id.reading_tv_date);
         mRvReadingComment = findViewById(R.id.reading_rv_comment);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mRvReadingComment.setLayoutManager(manager);
+        mRvReadingComment.setFocusable(false);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.hide();
@@ -65,8 +66,7 @@ public class ReadingContentActivity extends AppCompatActivity {
             public void onFinish(Reading reading) {
                 mTvTitle.setText(reading.getmTitle());
                 mTvAuthor.setText("文 | " + reading.getmAuthorName());
-                Spanned spanned = Html.fromHtml(reading.getmContent());
-                mTvContent.setText(spanned);
+                mWvContent.loadDataWithBaseURL(null, reading.getmContent(), null,null,null);
                 mTvDate.setText(reading.getmLastUpdateDate());
             }
         });

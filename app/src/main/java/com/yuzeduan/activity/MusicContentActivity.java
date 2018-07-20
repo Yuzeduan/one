@@ -7,8 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.Spanned;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,6 +21,8 @@ import com.yuzeduan.model.MusicContentCallback;
 import com.yuzeduan.model.MusicContentModel;
 import com.yuzeduan.util.ImageCallback;
 import com.yuzeduan.util.ImageHttpUtil;
+import com.yuzeduan.util.WebViewImageUtil;
+
 import java.util.List;
 
 /**
@@ -31,7 +32,8 @@ import java.util.List;
 public class MusicContentActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;  // 展示音乐评论列表的控件
     private TextView mTvMusicTitle, mTvStoryTitle, mTvStoryAuthorName, mTvMusicUserName,
-            mTvDate, mTvContent;
+            mTvDate;
+    private WebView mWvContent;
     private ImageView mIvCover;
     private String mItemId;
     private MusicContentModel mMusicContentModel = new MusicContentModel();
@@ -47,10 +49,11 @@ public class MusicContentActivity extends AppCompatActivity {
         mTvStoryAuthorName = (TextView)findViewById(R.id.music_tv_storyauthorname);
         mTvMusicUserName = (TextView)findViewById(R.id.music_tv_musicusername);
         mTvDate = (TextView)findViewById(R.id.music_tv_date);
-        mTvContent = (TextView)findViewById(R.id.music_tv_content);
+        mWvContent = findViewById(R.id.music_wv_content);
         mRecyclerView = (RecyclerView) findViewById(R.id.music_rv_comment);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(manager);
+        mRecyclerView.setFocusable(false);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.hide();
@@ -81,8 +84,8 @@ public class MusicContentActivity extends AppCompatActivity {
                 mTvStoryAuthorName.setText("文 | " + music.getmStoryAuthor().getmAuthorName());
                 mTvMusicUserName.setText("歌曲 | " + music.getmAuthor().getmUserName());
                 mTvDate.setText(music.getmLastUpdateDate());
-                Spanned spanned = Html.fromHtml(music.getmStoryContent());
-                mTvContent.setText(spanned);
+                String content = WebViewImageUtil.getNewContent(music.getmStoryContent());
+                mWvContent.loadDataWithBaseURL(null, content, null, null, null);
                 ImageHttpUtil.setImage(music.getmCover(), new ImageCallback() {
                     @Override
                     public void getBitmap(Bitmap bitmap) {
