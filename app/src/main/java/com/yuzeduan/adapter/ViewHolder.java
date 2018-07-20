@@ -1,7 +1,7 @@
 package com.yuzeduan.adapter;
 
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,55 +9,35 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.yuzeduan.util.ImageCallback;
-import com.yuzeduan.util.ImageHttpUtil;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * 构建通用的ViewHolder
  */
-public class ViewHolder {
-    private int mPosition;
+public class ViewHolder extends RecyclerView.ViewHolder{
     private SparseArray<View> mViews;
     private View mConvertView;
 
     /**
      * 创建一个ViewHolder
-     * @param context
-     * @param parent
-     * @param layoutId
-     * @param position
      */
-    private ViewHolder(Context context, ViewGroup parent, int layoutId,
-                       int position){
-        this.mPosition = position;
-        this.mViews = new SparseArray<>();
-        mConvertView = LayoutInflater.from(context).inflate(layoutId, parent,
-                false);
-        mConvertView.setTag(this);
+    private ViewHolder(View view){
+        super(view);
+        mViews = new SparseArray<>();
+        mConvertView = view;
     }
 
     /**
      * 拿到一个ViewHolder对象
-     * @param context
-     * @param convertView
      * @param parent
      * @param layoutId
-     * @param position
      * @return 如果View加载过,则返回ViewHolder进行复用,如果没有,则创建一个ViewHolder
      */
-    public static ViewHolder getViewHolder(Context context, View convertView,
-                                 ViewGroup parent, int layoutId, int position){
-        if (convertView == null){
-            return new ViewHolder(context, parent, layoutId, position);
-        }
-        return (ViewHolder) convertView.getTag();
+    public static ViewHolder getViewHolder(ViewGroup parent, int layoutId){
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutId, null);
+        return new ViewHolder(view);
     }
 
-    public View getConvertView(){
-        return mConvertView;
-    }
 
     // 通过相应的id获取控件
     public <T extends View> T getView(int viewId){
@@ -82,34 +62,17 @@ public class ViewHolder {
     }
 
     // 为ImageView设置图片(Bitmap)
-    public ViewHolder setBitmap(int viewId, String imageUrl){
-        final ImageView view = getView(viewId);
-        ImageHttpUtil.setImage(imageUrl, new ImageCallback() {
-            @Override
-            public void getBitmap(Bitmap bitmap) {
-                view.setImageBitmap(bitmap);
-            }
-        });
+    public ViewHolder setBitmap(int viewId, Bitmap bitmap){
+        ImageView view = getView(viewId);
+        view.setImageBitmap(bitmap);
         return this;
     }
 
     // 为CircleImageView设置图片(Bitmap)
-    public ViewHolder setCircleBitmap(int viewId, String imageUrl){
-        final CircleImageView view = getView(viewId);
-        ImageHttpUtil.setImage(imageUrl, new ImageCallback() {
-            @Override
-            public void getBitmap(Bitmap bitmap) {
-                view.setImageBitmap(bitmap);
-            }
-        });
+    public ViewHolder setCircleBitmap(int viewId, Bitmap bitmap){
+        CircleImageView view = getView(viewId);
+        view.setImageBitmap(bitmap);
         return this;
     }
 
-    public int getmPosition() {
-        return mPosition;
-    }
-
-    public View getmConvertView(){
-        return mConvertView;
-    }
 }

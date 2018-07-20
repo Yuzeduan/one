@@ -1,9 +1,9 @@
 package com.yuzeduan.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 
 import java.util.List;
 
@@ -11,37 +11,49 @@ import java.util.List;
  * 构建公共的适配器
  * @param <T> 表示子项的类型
  */
-public abstract class CommonAdapter<T> extends BaseAdapter {
+public abstract class CommonAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     private Context mContext;
     private List<T> mDatas;
-    private int mItemLayoutId;
+    private int mLayoutId;
+    private OnItemClickListener mOnItemClickListener;
 
     @Override
-    public T getItem(int position) {
-        return mDatas.get(position);
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+        if(mOnItemClickListener != null) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view){
+                    mOnItemClickListener.OnItemClickListener(holder.getLayoutPosition());
+                }
+            });
+        }
+        convert(holder, mDatas.get(position));
     }
 
     @Override
-    public long getItemId(int position) {
-        return position;
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        ViewHolder viewHolder = ViewHolder.getViewHolder(parent, mLayoutId);
+        return viewHolder;
     }
 
     @Override
-    public int getCount() {
+    public int getItemCount() {
         return mDatas.size();
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder = ViewHolder.getViewHolder(mContext, convertView, parent, mItemLayoutId, position);
-        convert(viewHolder, getItem(position));
-        return viewHolder.getmConvertView();
+    public int getItemViewType(int position) {
+        return super.getItemViewType(position);
     }
 
-    public CommonAdapter(Context mContext, List<T> mDatas, int mItemLayoutId) {
+    public void setmOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
+    }
+
+    public CommonAdapter(Context mContext, List<T> mDatas, int mLayoutId) {
         this.mContext = mContext;
+        this.mLayoutId = mLayoutId;
         this.mDatas = mDatas;
-        this.mItemLayoutId = mItemLayoutId;
     }
 
     /**
@@ -50,4 +62,8 @@ public abstract class CommonAdapter<T> extends BaseAdapter {
      * @param item
      */
     public abstract void convert(ViewHolder viewHolder, T item);
+
+    public interface OnItemClickListener {
+        void OnItemClickListener(int position);
+    }
 }

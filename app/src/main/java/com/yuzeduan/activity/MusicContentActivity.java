@@ -5,10 +5,11 @@ import android.graphics.Bitmap;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.Spanned;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
@@ -28,7 +29,7 @@ import java.util.List;
  * 通过接收上一活动传来的音乐详情具体id,进行音乐详情和该音乐评论的信息的获取和展示
  */
 public class MusicContentActivity extends AppCompatActivity {
-    private ListView mLvMusicComment;  // 展示音乐评论列表的控件
+    private RecyclerView mRecyclerView;  // 展示音乐评论列表的控件
     private TextView mTvMusicTitle, mTvStoryTitle, mTvStoryAuthorName, mTvMusicUserName,
             mTvDate, mTvContent;
     private ImageView mIvCover;
@@ -47,8 +48,9 @@ public class MusicContentActivity extends AppCompatActivity {
         mTvMusicUserName = (TextView)findViewById(R.id.music_tv_musicusername);
         mTvDate = (TextView)findViewById(R.id.music_tv_date);
         mTvContent = (TextView)findViewById(R.id.music_tv_content);
-        mLvMusicComment = (ListView)findViewById(R.id.music_lv_comment) ;
-        mLvMusicComment.setFocusable(false);  // 取消listView的焦点
+        mRecyclerView = (RecyclerView) findViewById(R.id.music_rv_comment);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(manager);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.hide();
@@ -101,7 +103,7 @@ public class MusicContentActivity extends AppCompatActivity {
             @Override
             public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(MusicContentActivity.this, list, R.layout.comment_item);
-                mLvMusicComment.setAdapter(adapter);
+                mRecyclerView.setAdapter(adapter);
             }
         });
     }

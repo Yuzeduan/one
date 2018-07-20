@@ -5,14 +5,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import com.yuzeduan.activity.MusicContentActivity;
 import com.yuzeduan.activity.R;
+import com.yuzeduan.adapter.CommonAdapter;
 import com.yuzeduan.adapter.MusicAdapter;
 import com.yuzeduan.bean.ReadingMusicList;
 import com.yuzeduan.model.MusicListCallback;
@@ -25,7 +26,7 @@ import static com.yuzeduan.bean.Constant.NEW_MUSICLIST_URL;
 import static com.yuzeduan.bean.Constant.REFRESH_DATA;
 
 public class MusicFragment extends Fragment{
-    private ListView mListView;
+    private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mSwipeRefresh;
     private List<ReadingMusicList> mMusicList;
     private MusicListModel mMusicListModel = new MusicListModel();
@@ -34,7 +35,9 @@ public class MusicFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment, container, false);
-        mListView = view.findViewById(R.id.main_lv_list);
+        mRecyclerView = view.findViewById(R.id.main_rv_list);
+        LinearLayoutManager manager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(manager);
         mSwipeRefresh = view.findViewById(R.id.swipe_refresh);
         setView();
         refreshView();
@@ -51,18 +54,17 @@ public class MusicFragment extends Fragment{
             public void onFinish(List<ReadingMusicList> list) {
                 mMusicList = list;
                 MusicAdapter adapter = new MusicAdapter(getActivity(), mMusicList, R.layout.music_item);
-                mListView.setAdapter(adapter);
-                // 给列表设置点击事件监听器,获取子项的具体item_id,传给下一个活动
-                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                adapter.setmOnItemClickListener(new CommonAdapter.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        ReadingMusicList music = mMusicList.get(position);
-                        String item_id = music.getmItemId();
+                    public void OnItemClickListener(int position) {
+                       ReadingMusicList item = mMusicList.get(position);
+                        String itemId = item.getmItemId();
                         Intent intent = new Intent(getActivity(), MusicContentActivity.class);
-                        intent.putExtra("id", item_id);
+                        intent.putExtra("id", itemId);
                         startActivity(intent);
                     }
                 });
+                mRecyclerView.setAdapter(adapter);
             }
         });
     }

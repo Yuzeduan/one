@@ -9,11 +9,12 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent">
 
-        <ListView android:id="@+id/main_lv_list"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/main_rv_list"
             android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:dividerHeight="18dp">
-        </ListView>
+            android:layout_width="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

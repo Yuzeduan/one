@@ -63,13 +63,11 @@
         android:textColor="#000"
         android:textSize="20sp"/>
 
-        <com.yuzeduan.ui.CommentListView
-            android:id="@+id/music_lv_comment"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/music_rv_comment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="#33000000"
-            android:dividerHeight="0.1dp">
-        </com.yuzeduan.ui.CommentListView>
+            android:layout_height="wrap_content">
+        </android.support.v7.widget.RecyclerView>
 
     </LinearLayout>
 

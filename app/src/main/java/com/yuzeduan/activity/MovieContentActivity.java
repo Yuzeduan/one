@@ -4,9 +4,10 @@ import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.Spanned;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
@@ -25,7 +26,7 @@ import java.util.List;
  * 通过接收上一活动传来的影视详情具体id,进行影视详情和该影视评论的信息的获取和展示
  */
 public class MovieContentActivity extends AppCompatActivity {
-    private ListView mLvMovieComment;  // 展示影视评论列表的控件
+    private RecyclerView mRvMovieComment;// 展示影视评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
     private MovieContentModel mMovieContentModel = new MovieContentModel();
@@ -39,8 +40,9 @@ public class MovieContentActivity extends AppCompatActivity {
         mTvAuthor = (TextView)findViewById(R.id.movie_tv_author);
         mTvContent = (TextView)findViewById(R.id.movie_tv_content);
         mTvDate = (TextView)findViewById(R.id.movie_tv_date);
-        mLvMovieComment = (ListView)findViewById(R.id.movie_lv_comment);
-        mLvMovieComment.setFocusable(false);
+        mRvMovieComment = findViewById(R.id.movie_rv_comment);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        mRvMovieComment.setLayoutManager(manager);
         //隐藏主标题栏
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null) {
@@ -85,7 +87,7 @@ public class MovieContentActivity extends AppCompatActivity {
             @Override
             public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(MovieContentActivity.this, list, R.layout.comment_item);
-                mLvMovieComment.setAdapter(adapter);
+                mRvMovieComment.setAdapter(adapter);
             }
         });
     }

@@ -4,9 +4,10 @@ import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.Spanned;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.yuzeduan.adapter.CommentAdapter;
@@ -25,7 +26,7 @@ import java.util.List;
  * 通过接收上一活动传来的阅读详情具体id,进行阅读详情和该阅读评论的信息的获取和展示
  */
 public class ReadingContentActivity extends AppCompatActivity {
-    private ListView mLvReadingComment;  // 展示阅读评论列表的控件
+    private RecyclerView mRvReadingComment;  // 展示阅读评论列表的控件
     private TextView mTvTitle, mTvAuthor, mTvContent, mTvDate;
     private String mItemId;
     private ReadingContentModel mReadingContentModel = new ReadingContentModel();
@@ -39,8 +40,9 @@ public class ReadingContentActivity extends AppCompatActivity {
         mTvAuthor = (TextView)findViewById(R.id.reading_tv_author);
         mTvContent = (TextView)findViewById(R.id.reading_tv_content);
         mTvDate = (TextView)findViewById(R.id.reading_tv_date);
-        mLvReadingComment = (ListView)findViewById(R.id.reading_lv_comment);
-        mLvReadingComment.setFocusable(false);
+        mRvReadingComment = findViewById(R.id.reading_rv_comment);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        mRvReadingComment.setLayoutManager(manager);
         ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
             actionBar.hide();
@@ -85,7 +87,7 @@ public class ReadingContentActivity extends AppCompatActivity {
             @Override
             public void onFinish(List<Comment> list) {
                 CommentAdapter adapter = new CommentAdapter(ReadingContentActivity.this, list, R.layout.comment_item);
-                mLvReadingComment.setAdapter(adapter);
+                mRvReadingComment.setAdapter(adapter);
             }
         });
     }
