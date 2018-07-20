@@ -3,7 +3,6 @@ package com.yuzeduan.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,7 +24,8 @@ import static com.yuzeduan.bean.Constant.MUSICLIST_URL;
 import static com.yuzeduan.bean.Constant.NEW_MUSICLIST_URL;
 import static com.yuzeduan.bean.Constant.REFRESH_DATA;
 
-public class MusicFragment extends Fragment{
+public class MusicFragment extends BaseFragment{
+    private View mView;
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mSwipeRefresh;
     private List<ReadingMusicList> mMusicList;
@@ -34,39 +34,43 @@ public class MusicFragment extends Fragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment, container, false);
-        mRecyclerView = view.findViewById(R.id.main_rv_list);
+        if(mView == null){
+            mView = inflater.inflate(R.layout.fragment, container, false);
+        }
+        mRecyclerView = mView.findViewById(R.id.main_rv_list);
         LinearLayoutManager manager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(manager);
-        mSwipeRefresh = view.findViewById(R.id.swipe_refresh);
-        setView();
+        mSwipeRefresh = mView.findViewById(R.id.swipe_refresh);
+        isPrepared = true;
         refreshView();
-        return view;
+        return mView;
     }
 
     public void setView(){
-        mMusicListModel.getMusicListData(MUSICLIST_URL, new MusicListCallback() {
-            @Override
-            public void onRefresh() {
-            }
+        if(isPrepared && isVisible && isFirst){
+            mMusicListModel.getMusicListData(MUSICLIST_URL, new MusicListCallback() {
+                @Override
+                public void onRefresh() {
+                }
 
-            @Override
-            public void onFinish(List<ReadingMusicList> list) {
-                mMusicList = list;
-                MusicAdapter adapter = new MusicAdapter(getActivity(), mMusicList, R.layout.music_item);
-                adapter.setmOnItemClickListener(new CommonAdapter.OnItemClickListener() {
-                    @Override
-                    public void OnItemClickListener(int position) {
-                       ReadingMusicList item = mMusicList.get(position);
-                        String itemId = item.getmItemId();
-                        Intent intent = new Intent(getActivity(), MusicContentActivity.class);
-                        intent.putExtra("id", itemId);
-                        startActivity(intent);
-                    }
-                });
-                mRecyclerView.setAdapter(adapter);
-            }
-        });
+                @Override
+                public void onFinish(List<ReadingMusicList> list) {
+                    mMusicList = list;
+                    MusicAdapter adapter = new MusicAdapter(getActivity(), mMusicList, R.layout.music_item);
+                    adapter.setmOnItemClickListener(new CommonAdapter.OnItemClickListener() {
+                        @Override
+                        public void OnItemClickListener(int position) {
+                            ReadingMusicList item = mMusicList.get(position);
+                            String itemId = item.getmItemId();
+                            Intent intent = new Intent(getActivity(), MusicContentActivity.class);
+                            intent.putExtra("id", itemId);
+                            startActivity(intent);
+                        }
+                    });
+                    mRecyclerView.setAdapter(adapter);
+                }
+            });
+        }
     }
 
     public void refreshView(){
