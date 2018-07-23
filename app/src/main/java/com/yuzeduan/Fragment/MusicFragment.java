@@ -36,11 +36,12 @@ public class MusicFragment extends BaseFragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if(mView == null){
             mView = inflater.inflate(R.layout.fragment, container, false);
+            mRecyclerView = mView.findViewById(R.id.main_rv_list);
+            LinearLayoutManager manager = new LinearLayoutManager(getActivity());
+            mRecyclerView.setLayoutManager(manager);
+            mSwipeRefresh = mView.findViewById(R.id.swipe_refresh);
+            mSwipeRefresh.setRefreshing(true);
         }
-        mRecyclerView = mView.findViewById(R.id.main_rv_list);
-        LinearLayoutManager manager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(manager);
-        mSwipeRefresh = mView.findViewById(R.id.swipe_refresh);
         isPrepared = true;
         refreshView();
         return mView;
@@ -48,6 +49,7 @@ public class MusicFragment extends BaseFragment{
 
     public void setView(){
         if(isPrepared && isVisible && isFirst){
+            mSwipeRefresh.setRefreshing(false);
             mMusicListModel.getMusicListData(MUSICLIST_URL, new MusicListCallback() {
                 @Override
                 public void onRefresh() {
